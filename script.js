@@ -3,7 +3,7 @@ let c, cw, ch, mx, my, gl, run, eCheck;
 let startTime;
 let time = 0.0;
 let tempTime = 0.0;
-let fps = 1000 / 5; //1000ms 5fps
+const fps = 1000 / 5; //1000ms 5fps
 let uniLocation = new Array();
 let keyary = new Array();
 let diff=1.0
@@ -12,13 +12,11 @@ let diff=1.0
 window.onload = function(){
   // エレメントを取得
   c = document.getElementById('canvas');
-  eCheck = document.getElementById('check');
   
   // canvas サイズ
-  //ch=512;cw=512;
-  cw = parseInt(window.getComputedStyle(c).width,10);
-  ch = parseInt(window.getComputedStyle(c).height,10);
-  c.height=ch;c.width=cw;
+  ch=512;cw=512;
+  c.height=ch;
+  c.width=cw;
 
   // イベントリスナー登録
   document.addEventListener("keydown",key,true);
@@ -28,7 +26,7 @@ window.onload = function(){
   //eCheck.addEventListener('change', checkChange, true);
   
   // WebGL コンテキストを取得
-  gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+  gl = c.getContext('webgl');
   
   // シェーダ周りの初期化
   let prg = create_program(create_shader('vs'), create_shader('fs'));
@@ -85,7 +83,6 @@ function create_shader(id){
     case 'x-shader/x-vertex':
       shader = gl.createShader(gl.VERTEX_SHADER);
       break;
-        
     // フラグメントシェーダの場合
     case 'x-shader/x-fragment':
       shader = gl.createShader(gl.FRAGMENT_SHADER);
