@@ -1,24 +1,25 @@
 // global
-var c, cw, ch, mx, my, gl, run, eCheck;
-var startTime;
-var time = 0.0;
-var tempTime = 0.0;
-var fps = 1000 / 5;
-var uniLocation = new Array();
-var keyary=new Array();
-var diff=1.0
+let c, cw, ch, mx, my, gl, run, eCheck;
+let startTime;
+let time = 0.0;
+let tempTime = 0.0;
+let fps = 1000 / 5; //1000ms 5fps
+let uniLocation = new Array();
+let keyary = new Array();
+let diff=1.0
+
 // onload
 window.onload = function(){
-  // canvas エレメントを取得
-  c = document.getElementById('canvas');
-  
-  // canvas サイズ
-  cw = 512; ch = 512;
-  c.width = cw; c.height = ch;
-  
   // エレメントを取得
+  c = document.getElementById('canvas');
   eCheck = document.getElementById('check');
   
+  // canvas サイズ
+  //ch=512;cw=512;
+  cw = parseInt(window.getComputedStyle(c).width,10);
+  ch = parseInt(window.getComputedStyle(c).height,10);
+  c.height=ch;c.width=cw;
+
   // イベントリスナー登録
   document.addEventListener("keydown",key,true);
   //w=87,a=65,s=83,d=68,z=90,x=88
@@ -30,7 +31,7 @@ window.onload = function(){
   gl = c.getContext('webgl') || c.getContext('experimental-webgl');
   
   // シェーダ周りの初期化
-  var prg = create_program(create_shader('vs'), create_shader('fs'));
+  let prg = create_program(create_shader('vs'), create_shader('fs'));
   run = (prg != null); if(!run){eCheck.checked = false;}
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
@@ -38,19 +39,19 @@ window.onload = function(){
   uniLocation[3] = gl.getUniformLocation(prg, 'keyary');
   
   // 頂点データ回りの初期化
-  var position = [
+  let position = [
     -1.0,  1.0,  0.0,
      1.0,  1.0,  0.0,
     -1.0, -1.0,  0.0,
      1.0, -1.0,  0.0
   ];
-  var index = [
+  let index = [
       0, 2, 1,
       1, 2, 3
   ];
-  var vPosition = create_vbo(position);
-  var vIndex = create_ibo(index);
-  var vAttLocation = gl.getAttribLocation(prg, 'position');
+  let vPosition = create_vbo(position);
+  let vIndex = create_ibo(index);
+  let vAttLocation = gl.getAttribLocation(prg, 'position');
   gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
   gl.enableVertexAttribArray(vAttLocation);
   gl.vertexAttribPointer(vAttLocation, 3, gl.FLOAT, false, 0, 0);
@@ -69,10 +70,10 @@ window.onload = function(){
 
 function create_shader(id){
   // シェーダを格納する変数
-  var shader;
+  let shader;
   
   // HTMLからscriptタグへの参照を取得
-  var scriptElement = document.getElementById(id);
+  let scriptElement = document.getElementById(id);
   
   // scriptタグが存在しない場合は抜ける
   if(!scriptElement){return;}
@@ -113,7 +114,7 @@ function create_shader(id){
 
 function create_program(vs, fs){
   // プログラムオブジェクトの生成
-  var program = gl.createProgram();
+  let program = gl.createProgram();
   
   // プログラムオブジェクトにシェーダを割り当てる
   gl.attachShader(program, vs);
@@ -158,12 +159,14 @@ function render(){
   gl.flush();
   
   // 再帰
-  setTimeout(render, fps);
+  //setTimeout(render, fps);
+  //無効化してるだけ
+
 }
 
 function create_vbo(data){
   // バッファオブジェクトの生成
-  var vbo = gl.createBuffer();
+  let vbo = gl.createBuffer();
   
   // バッファをバインドする
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -181,7 +184,7 @@ function create_vbo(data){
 // IBOを生成する関数
 function create_ibo(data){
   // バッファオブジェクトの生成
-  var ibo = gl.createBuffer();
+  let ibo = gl.createBuffer();
   
   // バッファをバインドする
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
