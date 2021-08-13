@@ -76,24 +76,24 @@ function create_shader(id){
   // scriptタグが存在しない場合は抜ける
   if(!scriptElement){return;}
   
-  // scriptタグのtype属性をチェック
-  switch(scriptElement.type){
+  // scriptタグのclass属性をチェック
+  // 生成されたシェーダにソースを割り当てる
+  switch(scriptElement.className){
       
     // 頂点シェーダの場合
     case 'x-shader/x-vertex':
       shader = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(shader, vertexShader);
       break;
     // フラグメントシェーダの場合
     case 'x-shader/x-fragment':
       shader = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(shader, fragmentShader);
       break;
     default :
       return;
   }
-  
-  // 生成されたシェーダにソースを割り当てる
-  gl.shaderSource(shader, scriptElement.text);
-  
+    
   // シェーダをコンパイルする
   gl.compileShader(shader);
   

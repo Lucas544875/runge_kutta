@@ -1,3 +1,4 @@
+var fragmentShader =`
 precision mediump float;
 uniform float time;
 uniform vec2  mouse;
@@ -8,3 +9,4 @@ void main(void){
   vec2 color = (vec2(1.0) + p.xy) * 0.5;
   gl_FragColor = vec4(color, 0.0, 1.0);
 }
+`
