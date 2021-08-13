@@ -1,10 +1,10 @@
 // global
-let c, cw, ch, mx, my, gl, run, eCheck;
+let c, cw, ch, mx, my, gl;
 let startTime;
 let time = 0.0;
-let tempTime = 0.0;
-const fps = 1000 / 5; //1000ms 5fps
 let uniLocation = new Array();
+let vAttLocation = new Array();
+let attStride = new Array();
 let keyary = new Array();
 let diff=1.0
 
@@ -30,12 +30,14 @@ window.onload = function(){
   
   // シェーダ周りの初期化
   let prg = create_program(create_shader('vs'), create_shader('fs'));
-  run = (prg != null); if(!run){eCheck.checked = false;}
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
   uniLocation[3] = gl.getUniformLocation(prg, 'keyary');
-  
+
+  vAttLocation[0] = gl.getAttribLocation(prg, 'position');
+  attStride[0] = 3;
+
   // 頂点データ回りの初期化
   let position = [
     -1.0,  1.0,  0.0,
@@ -47,12 +49,17 @@ window.onload = function(){
       0, 2, 1,
       1, 2, 3
   ];
+
+  //vbo
   let vPosition = create_vbo(position);
-  let vIndex = create_ibo(index);
-  let vAttLocation = gl.getAttribLocation(prg, 'position');
+  
+  //vboのバインド attribute属性の設定 増えてきたら関数化する
   gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
-  gl.enableVertexAttribArray(vAttLocation);
-  gl.vertexAttribPointer(vAttLocation, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vAttLocation[0]);
+  gl.vertexAttribPointer(vAttLocation[0], attStride[0], gl.FLOAT, false, 0, 0);
+  
+  //iboの生成
+  let vIndex = create_ibo(index);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vIndex);
   
   // その他の初期化
@@ -77,7 +84,6 @@ function create_shader(id){
   if(!scriptElement){return;}
   
   // scriptタグのclass属性をチェック
-  // 生成されたシェーダにソースを割り当てる
   switch(scriptElement.className){
       
     // 頂点シェーダの場合
@@ -137,9 +143,6 @@ function create_program(vs, fs){
 
 // レンダリングを行う関数
 function render(){
-  // フラグチェック
-  if(!run){return;}
-  
   // 時間管理
   time = (new Date().getTime() - startTime) * 0.001;
   
@@ -147,7 +150,7 @@ function render(){
   gl.clear(gl.COLOR_BUFFER_BIT);
   
   // uniform 関連
-  gl.uniform1f(uniLocation[0], time + tempTime);
+  gl.uniform1f(uniLocation[0], time);
   gl.uniform2fv(uniLocation[1], [mx, my]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   gl.uniformMatrix4fv(uniLocation[3], false, keyary)
@@ -196,18 +199,6 @@ function create_ibo(data){
   return ibo;
 }
 
-/*
-// checkbox
-function checkChange(e){
-  run = e.currentTarget.checked;
-  if(run){
-    startTime = new Date().getTime();
-    render();
-  }else{
-    tempTime += time;
-  }
-}
-*/
 // mouse
 function mouseMove(e){
   mx = e.offsetX / cw;
