@@ -1,4 +1,4 @@
-var vertexShader =`
+let vertexShader =`
 attribute vec3 position;
 
 void main(void){
