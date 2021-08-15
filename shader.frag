@@ -1,9 +1,9 @@
-var fragmentShader =`
-precision mediump float;
+let fragmentShader =`
 precision mediump float;
 uniform float time;
 uniform vec2  mouse;
 uniform vec2  resolution;
+uniform mat4  keyary;
 
 const float PI = 3.14159265;
 const float E = 2.718281828459;
