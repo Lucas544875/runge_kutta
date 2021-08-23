@@ -1,7 +1,5 @@
 // global
-let c, cw, ch, mx, my, gl, eCheck, mouseflag;
-let centorx=0.0;
-let centory=0.0;
+let c, cw, ch, gl, eCheck, mouseflag;
 let startTimeary = [];
 let tempTimeary = [0.0,0.0];
 let timenow = 0.0;
@@ -24,11 +22,8 @@ window.onload = function(){
 
   // イベントリスナー登録
   document.addEventListener("keydown",key,true);
-  document.addEventListener("mousedown",mouseDown,true);
-  document.addEventListener("mouseup",mouseUp,true);
   //w=87,a=65,s=83,d=68,z=90,x=88
   //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
-  c.addEventListener('mousemove', mouseMove, true);
   eCheck.addEventListener('change', checkChange, true);
   
   // WebGL コンテキストを取得
@@ -70,7 +65,6 @@ window.onload = function(){
   
   // その他の初期化
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  mx = 0.0; my = 0.0;
   keyary=[1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 
   startTimeary[0] = new Date().getTime();
@@ -92,7 +86,7 @@ function render(){
   
   // uniform 関連
   gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
-  gl.uniform2fv(uniLocation[1], [mx, my]);
+  gl.uniform2fv(uniLocation[1], [0, 0]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   if (mouseflag) {
     keyary[3]=(timenow - startTimeary[1] + tempTimeary[1]) * 0.001;
@@ -206,15 +200,6 @@ function create_ibo(data){
   return ibo;
 }
 
-// mouse center
-function mouseMove(e){
-  if (!mouseflag){
-    let zoom=Math.exp(keyary[3] / 3.0- 0.5);
-    mx =(2 * e.offsetX / cw - 1)/zoom*2+centorx;
-    my =(-2 * e.offsetY / ch + 1)/zoom*2+centory;
-  };
-}
-
 //check box
 function checkChange(e) {
   run = e.currentTarget.checked;
@@ -224,23 +209,6 @@ function checkChange(e) {
   }else{
     tempTimeary[0] += timenow - startTimeary[0]
   }
-};
-
-function mouseDown(e) {
-  mouseflag=true;
-  startTimeary[1] = new Date().getTime();
-  centorx=mx;
-  centory=my;
-};
-
-function mouseUp(e) {
-  mouseflag=false;
-  tempTimeary[1] += timenow - startTimeary[1];
-  let zoom=Math.exp(keyary[3] / 3.0- 0.5);
-
-  centorx-=(2 * e.offsetX / cw - 1)/zoom*2;
-  centory-=(-2 * e.offsetY / cw + 1)/zoom*2;
-  console.log(zoom);
 };
 
 //key

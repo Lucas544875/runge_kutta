@@ -21,7 +21,7 @@ void main(void){
   
   // ジュリア集合
   int j = 0;
-  vec2  point = p/zoom - mouse + vec2(-0.5, 0.0);
+  vec2  point = p/zoom - mouse;
   vec2  element = vec2(0.0, 0.0);
   
   // 漸化式
