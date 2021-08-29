@@ -6,7 +6,7 @@ uniform vec2  resolution;
 uniform mat4  keyary;
 
 const float PI = 3.14159265;
-const float E = 2.718281828459;
+const float E = 2.71828182;
 const float angle = 30.0;
 const float fov = angle * 0.5 * PI / 180.0;
 const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
@@ -32,38 +32,7 @@ struct rayobj{
   float distmin;
   float len;
 };
-/*
-void sphereFold(inout vec3 z, inout float dz) {
-	float r2 = dot(z,z);
-	if (r<minRadius2) { 
-		// linear inner scaling
-		float temp = (fixedRadius2/minRadius2);
-		z *= temp;
-		dz*= temp;
-	} else if (r2<fixedRadius2) { 
-		// this is the actual sphere inversion
-		float temp =(fixedRadius2/r2);
-		z *= temp;
-		dz*= temp;
-	}
-}
-void boxFold(inout vec3 z, inout float dz) {
-	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
-}
-float DE(vec3 z)
-{
-	vec3 offset = z;
-	float dr = 1.0;
-	for (int n = 0; n < Iterations; n++) {
-		boxFold(z,dr);       // Reflect
-		sphereFold(z,dr);    // Sphere Inversion
-    z=Scale*z + offset;  // Scale & Translate
-    dr = dr*abs(Scale)+1.0;
-	}
-	float r = length(z);
-	return r/abs(dr);
-}
-*/
+
 float df1(vec3 z){
   return length(z-vec3(0,0,0))-1.0;
 }

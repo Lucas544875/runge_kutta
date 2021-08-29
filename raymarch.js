@@ -21,7 +21,7 @@ window.onload = function(){
   c.width=cw;
 
   // イベントリスナー登録
-  document.addEventListener("keydown",key,true);
+  //document.addEventListener("keydown",key,true);
   //w=87,a=65,s=83,d=68,z=90,x=88
   //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
   eCheck.addEventListener('change', checkChange, true);
