@@ -1,5 +1,8 @@
 // global
-let c, cw, ch, gl, eCheck, mouseflag;
+let c, cw, ch, gl, eCheck;
+let mouseflag=false;
+let centorx;
+let centory;
 let startTimeary = [];
 let tempTimeary = [0.0,0.0];
 let timenow = 0.0;
@@ -29,7 +32,10 @@ window.onload = function(){
   //w=87,a=65,s=83,d=68,z=90,x=88
   //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
   eCheck.addEventListener('change', checkChange, true);
-  
+  document.addEventListener("mousedown",mouseDown,true);
+  document.addEventListener("mouseup",mouseUp,true);
+  c.addEventListener('mousemove', mouseMove, true);
+
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
   
@@ -112,7 +118,7 @@ function create_shader(id){
   
   // scriptタグのclass属性をチェック
   switch(scriptElement.className){
-      
+    
     // 頂点シェーダの場合
     case 'x-shader/x-vertex':
       shader = gl.createShader(gl.VERTEX_SHADER);
@@ -126,17 +132,15 @@ function create_shader(id){
     default :
       return;
   }
-    
+  
   // シェーダをコンパイルする
   gl.compileShader(shader);
   
   // シェーダが正しくコンパイルされたかチェック
   if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
-      
     // 成功していたらシェーダを返して終了
     return shader;
   }else{
-      
     // 失敗していたらエラーログをアラートする
     alert(gl.getShaderInfoLog(shader));
   }
@@ -212,6 +216,41 @@ function checkChange(e) {
   }else{
     tempTimeary[0] += timenow - startTimeary[0]
   }
+};
+
+function mouseMove(e){
+  if (mouseflag){
+    let dx =(2 * (e.offsetX-centorx) / cw);
+    let dy =(-2 * (e.offsetY-centory) / ch);
+    centorx=e.offsetX;
+    centory=e.offsetY;
+    cRotate(dx,dy);
+    cMove(dx,dy);
+  };
+};
+
+function mouseDown(e) {
+  mouseflag=true;
+  centorx=e.offsetX;
+  centory=e.offsetY;
+};
+
+function mouseUp(e) {
+  mouseflag=false;
+};
+
+function cRotate(dx,dy) {
+  cDir[1]+=dx*Math.PI;
+};
+
+function cMove(dx,dy) {
+  let oldx=cPos[0];
+  let oldy=cPos[1];
+  let newx=oldx*Math.cos(dx*Math.PI)+oldy*Math.sin(dx*Math.PI);
+  let newy=-oldx*Math.sin(dx*Math.PI)+oldy*Math.cos(dx*Math.PI);
+  let normalize=Math.sqrt((oldx*oldx+oldy*oldy)/(newx*newx+newy*newy));
+  cPos[0]=newx*normalize;
+  cPos[1]=newy*normalize;
 };
 
 //key
