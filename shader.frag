@@ -3,7 +3,8 @@ precision mediump float;
 uniform float time;
 uniform vec2  mouse;
 uniform vec2  resolution;
-uniform mat4  keyary;
+uniform vec3  cDir;
+uniform vec3  cPos;
 
 const float PI = 3.14159265;
 const float E = 2.71828182;
@@ -12,9 +13,6 @@ const float fov = angle * 0.5 * PI / 180.0;
 const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
 const float theta=45.0;
-const vec3 cPos = vec3(0.0,-10.0,1.0);
-const vec3 cDir=vec3(-85.0,0.0,0.0)*PI/180.0;
-//const vec3 cDir=vec3(-50.0,0.0,-45.0)*PI/180.0;
 
 struct colorobj{
   vec3 col1;
@@ -140,6 +138,7 @@ float globallightfanc(vec3 normal,vec3 origin){
   float ans=min(a,temp.len)/a;
   return ans;
 }
+
 void main(void){
   // fragment position
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
@@ -147,7 +146,7 @@ void main(void){
   mat3 rotmaty=mat3(cos(cDir.y),0.0,-sin(cDir.y),0.0,1.0,0.0,sin(cDir.y),0.0,cos(cDir.y));
   mat3 rotmatz=mat3(cos(cDir.z),sin(cDir.z),0.0,-sin(cDir.z),cos(cDir.z),0.0,0.0,0.0,1.0);
   mat3 rotxyz=rotmaty*rotmatx*rotmatz;
-  vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)))*rotxyz;	
+  vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)))*rotxyz;
 
   rayobj temp=raymarch(ray,cPos);
   vec3 rPos=temp.rPos;

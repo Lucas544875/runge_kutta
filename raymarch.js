@@ -6,19 +6,23 @@ let timenow = 0.0;
 let uniLocation = [];
 let vAttLocation = [];
 let attStride = [];
-let keyary = [];
-let diff=1.0;
 let run = true;
+let cDir = [];
+let cPos = [];
+
 // onload
 window.onload = function(){
   // エレメントを取得
   c = document.getElementById('canvas');
   eCheck = document.getElementById('check');
 
-  // canvas サイズ
+  // uniform変数の初期化
   ch=512;cw=512;
   c.height=ch;
   c.width=cw;
+
+  cDir=[-85.0*Math.PI/180.0,0.0,0.0];
+  cPos=[0.0,-10.0,1.0];
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -34,7 +38,8 @@ window.onload = function(){
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
-  uniLocation[3] = gl.getUniformLocation(prg, 'keyary');
+  uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
+  uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -65,7 +70,6 @@ window.onload = function(){
   
   // その他の初期化
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  keyary=[1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 
   startTimeary[0] = new Date().getTime();
   
@@ -88,10 +92,9 @@ function render(){
   gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
   gl.uniform2fv(uniLocation[1], [0, 0]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
-  if (mouseflag) {
-    keyary[3]=(timenow - startTimeary[1] + tempTimeary[1]) * 0.001;
-  };
-  gl.uniformMatrix4fv(uniLocation[3], false, keyary)
+  gl.uniform3fv(uniLocation[3],cDir);
+  gl.uniform3fv(uniLocation[4],cPos);
+
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
   gl.flush();
