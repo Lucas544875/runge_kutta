@@ -10,7 +10,7 @@ let uniLocation = [];
 let vAttLocation = [];
 let attStride = [];
 let run = true;
-let cDir = [];
+let cDir;
 let cPos = [];
 
 // onload
@@ -23,8 +23,8 @@ window.onload = function(){
   ch=512;cw=512;
   c.height=ch;
   c.width=cw;
-
-  cDir=[-85.0*Math.PI/180.0,0.0,0.0];
+ //-85.0*Math.PI/180.0
+  cDir=Quatarnion.vec(1.0,0.0,0.0);
   cPos=[0.0,-10.0,1.0];
 
   // イベントリスナー登録
@@ -98,7 +98,7 @@ function render(){
   gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
   gl.uniform2fv(uniLocation[1], [0, 0]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
-  gl.uniform3fv(uniLocation[3],cDir);
+  gl.uniform3fv(uniLocation[3],cDir.tovec());
   gl.uniform3fv(uniLocation[4],cPos);
 
   // 描画
@@ -240,7 +240,8 @@ function mouseUp(e) {
 };
 
 function cRotate(dx,dy) {
-  cDir[1]+=dx*Math.PI;
+  rot=Quatarnion.rotation(dx*Math.PI,0,0,1);
+  cDir=cDir.turn(rot);
 };
 
 function cMove(dx,dy) {
