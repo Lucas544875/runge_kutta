@@ -24,7 +24,7 @@ window.onload = function(){
   c.height=ch;
   c.width=cw;
  //-85.0*Math.PI/180.0
-  cDir=Quatarnion.vec(1.0,0.0,0.0);
+  cDir=Quatarnion.vec(0.0,1.0,0.0);
   cPos=[0.0,-10.0,1.0];
 
   // イベントリスナー登録
@@ -240,7 +240,7 @@ function mouseUp(e) {
 };
 
 function cRotate(dx,dy) {
-  rot=Quatarnion.rotation(dx*Math.PI,0,0,1);
+  rot=Quatarnion.rotation(-dx*Math.PI,0,0,1);
   cDir=cDir.turn(rot);
 };
 

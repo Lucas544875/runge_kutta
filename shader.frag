@@ -142,11 +142,14 @@ float globallightfanc(vec3 normal,vec3 origin){
 void main(void){
   // fragment position
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-  mat3 rotmatx=mat3(1.0,0.0,0.0,0.0,cos(cDir.x),sin(cDir.x),0.0,-sin(cDir.x),cos(cDir.x));
-  mat3 rotmaty=mat3(cos(cDir.y),0.0,-sin(cDir.y),0.0,1.0,0.0,sin(cDir.y),0.0,cos(cDir.y));
-  mat3 rotmatz=mat3(cos(cDir.z),sin(cDir.z),0.0,-sin(cDir.z),cos(cDir.z),0.0,0.0,0.0,1.0);
-  mat3 rotxyz=rotmaty*rotmatx*rotmatz;
-  vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)))*rotxyz;
+  //mat3 rotmatx=mat3(1.0,0.0,0.0,0.0,cos(cDir.x),sin(cDir.x),0.0,-sin(cDir.x),cos(cDir.x));
+  //mat3 rotmaty=mat3(cos(cDir.y),0.0,-sin(cDir.y),0.0,1.0,0.0,sin(cDir.y),0.0,cos(cDir.y));
+  //mat3 rotmatz=mat3(cos(cDir.z),sin(cDir.z),0.0,-sin(cDir.z),cos(cDir.z),0.0,0.0,0.0,1.0);
+  //mat3 rotxyz=rotmaty*rotmatx*rotmatz;
+  //vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)))*rotxyz;
+  vec3 xaxes = normalize(cross(cDir,vec3(0.0,0.0,1.0)));
+  vec3 yaxes = -normalize(cross(cDir,xaxes));
+  vec3 ray = cDir + sin(fov) * p.x * xaxes + sin(fov) * p.y * yaxes;
 
   rayobj temp=raymarch(ray,cPos);
   vec3 rPos=temp.rPos;
