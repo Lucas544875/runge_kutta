@@ -1,10 +1,14 @@
 class Quatarnion {
   constructor(w,i,j,k){
-    let r = w**2+i**2+j**2+k**2;
-    this.w = w/r;
-    this.i = i/r;
-    this.j = j/r;
-    this.k = k/r;
+    this.w = w;
+    this.i = i;
+    this.j = j;
+    this.k = k;
+  };
+
+  normalize(){
+    let r = this.w**2+this.i**2+this.j**2+this.k**2;
+    return new Quatarnion(this.w/r,this.i/r,this.j/r,this.k/r)
   };
 
   times(q2){
@@ -27,7 +31,7 @@ class Quatarnion {
   static rotation(theta,x,y,z){
     let c = Math.cos(theta/2);
     let s = Math.sin(theta/2);
-    return new Quatarnion(c,x*s,y*s,z*s);
+    return new Quatarnion(c,x*s,y*s,z*s).normalize();
   }
 
   turn(q){
@@ -38,12 +42,12 @@ class Quatarnion {
     return [this.i,this.j,this.k];
   }
 
-  toarc(){
+  cross(q2){
     return [
-      Math.atan(2*(this.w*this.i+this.j*this.k)/(this.w**2-this.i**2-this.j**2+this.k**2)),
-      Math.asin(2*(this.w*this.j-this.i*this.k)),
-      Math.atan(2*(this.w*this.k+this.i*this.j)/(this.w**2+this.i**2-this.j**2-this.k**2)),
-    ];
+      this.j*q2.k-this.k*q2.j,
+      this.k*q2.i-this.i*q2.k,
+      this.i*q2.j-this.j*q2.i
+    ]
   }
   /* 
   欲しい関数

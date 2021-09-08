@@ -11,7 +11,7 @@ let vAttLocation = [];
 let attStride = [];
 let run = true;
 let cDir;
-let cPos = [];
+let cPos;
 
 // onload
 window.onload = function(){
@@ -25,7 +25,7 @@ window.onload = function(){
   c.width=cw;
  //-85.0*Math.PI/180.0
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=[0.0,-10.0,1.0];
+  cPos=Quatarnion.vec(0.0,-10.0,1.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -99,7 +99,7 @@ function render(){
   gl.uniform2fv(uniLocation[1], [0, 0]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   gl.uniform3fv(uniLocation[3],cDir.tovec());
-  gl.uniform3fv(uniLocation[4],cPos);
+  gl.uniform3fv(uniLocation[4],cPos.tovec());
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -240,18 +240,15 @@ function mouseUp(e) {
 };
 
 function cRotate(dx,dy) {
-  rot=Quatarnion.rotation(-dx*Math.PI,0,0,1);
-  cDir=cDir.turn(rot);
+  let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
+  let xaxea
+  let rotx=Quatarnion.rotation(-dx*Math.PI,0,0,0);
+  cDir=cDir.turn(roty.times(rotx));
 };
 
 function cMove(dx,dy) {
-  let oldx=cPos[0];
-  let oldy=cPos[1];
-  let newx=oldx*Math.cos(dx*Math.PI)+oldy*Math.sin(dx*Math.PI);
-  let newy=-oldx*Math.sin(dx*Math.PI)+oldy*Math.cos(dx*Math.PI);
-  let normalize=Math.sqrt((oldx*oldx+oldy*oldy)/(newx*newx+newy*newy));
-  cPos[0]=newx*normalize;
-  cPos[1]=newy*normalize;
+  let rot=Quatarnion.rotation(-dx*Math.PI,0,0,1);
+  cPos=cPos.turn(rot);
 };
 
 //key
