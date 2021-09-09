@@ -25,7 +25,7 @@ window.onload = function(){
   c.width=cw;
  //-85.0*Math.PI/180.0
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-10.0,1.0);
+  cPos=Quatarnion.vec(0.0,-10.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -220,12 +220,15 @@ function checkChange(e) {
 
 function mouseMove(e){
   if (mouseflag){
+    if (Math.abs(e.offsetX)===1 || Math.abs(e.offsetY)===1) {
+      mouseflag=false;
+    };
     let dx =(2 * (e.offsetX-centorx) / cw);
     let dy =(-2 * (e.offsetY-centory) / ch);
     centorx=e.offsetX;
     centory=e.offsetY;
-    cRotate(dx,dy);
     cMove(dx,dy);
+    cRotate(dx,dy);
   };
 };
 
@@ -239,16 +242,27 @@ function mouseUp(e) {
   mouseflag=false;
 };
 
+const arg = Math.sin(5/12*Math.PI);
+
 function cRotate(dx,dy) {
   let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
-  let xaxea
-  let rotx=Quatarnion.rotation(-dx*Math.PI,0,0,0);
+  let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
+  let rotx = new Quatarnion(1,0,0,0);
+  if (cDir.k*Math.sign(dy) < arg) {
+    rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
+  }
   cDir=cDir.turn(roty.times(rotx));
 };
 
 function cMove(dx,dy) {
-  let rot=Quatarnion.rotation(-dx*Math.PI,0,0,1);
-  cPos=cPos.turn(rot);
+  //todo:任意の点をピボットにできるようにする
+  let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
+  let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
+  let rotx = new Quatarnion(1,0,0,0);
+  if (cDir.k*Math.sign(dy) < arg) {
+    rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
+  }
+  cPos=cPos.turn(roty.times(rotx));
 };
 
 //key

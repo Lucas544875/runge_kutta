@@ -43,11 +43,13 @@ class Quatarnion {
   }
 
   cross(q2){
-    return [
+    //todo:入力がベクトルかチェック
+    return new Quatarnion(
+      0,
       this.j*q2.k-this.k*q2.j,
       this.k*q2.i-this.i*q2.k,
       this.i*q2.j-this.j*q2.i
-    ]
+    )
   }
   /* 
   欲しい関数
