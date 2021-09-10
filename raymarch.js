@@ -12,6 +12,7 @@ let attStride = [];
 let run = true;
 let cDir;
 let cPos;
+const maxpitch = Math.sin(5/12*Math.PI);
 
 // onload
 window.onload = function(){
@@ -19,11 +20,12 @@ window.onload = function(){
   c = document.getElementById('canvas');
   eCheck = document.getElementById('check');
 
-  // uniform変数の初期化
+  // キャンバスサイズの設定
   ch=512;cw=512;
   c.height=ch;
   c.width=cw;
- //-85.0*Math.PI/180.0
+
+  //視点の設定
   cDir=Quatarnion.vec(0.0,1.0,0.0);
   cPos=Quatarnion.vec(0.0,-10.0,0.0);
 
@@ -39,8 +41,11 @@ window.onload = function(){
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
   
-  // シェーダ周りの初期化
+  // シェーダのコンパイル
   let prg = create_program(create_shader('vs'), create_shader('fs'));
+
+  //unifoem,atteibute変数の設定
+  //time:完成まで使わなかったら消す
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
@@ -50,7 +55,7 @@ window.onload = function(){
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
 
-  // 頂点データ回りの初期化
+  // 頂点データ
   let position = [
     -1.0,  1.0,  0.0,
      1.0,  1.0,  0.0,
@@ -76,10 +81,9 @@ window.onload = function(){
   
   // その他の初期化
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
   startTimeary[0] = new Date().getTime();
   
-  // レンダリング関数呼出
+  // レンダリング
   render();
 };
 
@@ -98,8 +102,8 @@ function render(){
   gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
   gl.uniform2fv(uniLocation[1], [0, 0]);
   gl.uniform2fv(uniLocation[2], [cw, ch]);
-  gl.uniform3fv(uniLocation[3],cDir.tovec());
-  gl.uniform3fv(uniLocation[4],cPos.tovec());
+  gl.uniform3fv(uniLocation[3], cDir.tovec());
+  gl.uniform3fv(uniLocation[4], cPos.tovec());
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -207,9 +211,9 @@ function create_ibo(data){
   return ibo;
 }
 
-//check box
+//check box チェックされている間だけレンダリング
 function checkChange(e) {
-  run = e.currentTarget.checked;
+  run = e.currentTpitchet.checked;
   if(run){
     startTimeary[0] = new Date().getTime();
     render();
@@ -218,10 +222,12 @@ function checkChange(e) {
   }
 };
 
+//マウスインターフェース
 function mouseMove(e){
   if (mouseflag){
     if (Math.abs(e.offsetX)===1 || Math.abs(e.offsetY)===1) {
       mouseflag=false;
+      return;
     };
     let dx =(2 * (e.offsetX-centorx) / cw);
     let dy =(-2 * (e.offsetY-centory) / ch);
@@ -242,13 +248,11 @@ function mouseUp(e) {
   mouseflag=false;
 };
 
-const arg = Math.sin(5/12*Math.PI);
-
 function cRotate(dx,dy) {
   let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
   let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
   let rotx = new Quatarnion(1,0,0,0);
-  if (cDir.k*Math.sign(dy) < arg) {
+  if (cDir.k*Math.sign(dy) < maxpitch) {
     rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
   }
   cDir=cDir.turn(roty.times(rotx));
@@ -259,7 +263,7 @@ function cMove(dx,dy) {
   let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
   let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
   let rotx = new Quatarnion(1,0,0,0);
-  if (cDir.k*Math.sign(dy) < arg) {
+  if (cDir.k*Math.sign(dy) < maxpitch) {
     rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
   }
   cPos=cPos.turn(roty.times(rotx));

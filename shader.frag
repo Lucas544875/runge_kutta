@@ -1,6 +1,6 @@
 let fragmentShader =`
 precision mediump float;
-uniform float time;
+uniform float time;//使ってない
 uniform vec2  mouse;
 uniform vec2  resolution;
 uniform vec3  cDir;
