@@ -8,11 +8,9 @@ uniform vec3  cPos;
 
 const float PI = 3.14159265;
 const float E = 2.71828182;
-const float angle = 30.0;
-const float fov = angle * 0.5 * PI / 180.0;
+const float fov = 30.0 * 0.5 * PI / 180.0;
 const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
-const float theta=45.0;
 
 struct colorobj{
   vec3 col1;
@@ -33,16 +31,16 @@ struct rayobj{
 
 //quaternion
 vec4 times(vec4 q1,vec4 q2){
-  return normalize(vec4 (
+  return vec4 (
     q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2] - q1[3]*q2[3],
     q1[0]*q2[1] + q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2],
     q1[0]*q2[2] - q1[1]*q2[3] + q1[2]*q2[0] + q1[3]*q2[1],
     q1[0]*q2[3] + q1[1]*q2[2] - q1[2]*q2[1] + q1[3]*q2[0]
-  ));
+  );
 }
 
 vec4 inverse(vec4 q){
-  return normalize(vec4(q[0],-q[1],-q[2],-q[3]));
+  return vec4(q[0],-q[1],-q[2],-q[3]);
 }
 
 vec4 rotation(float theta,vec3 v){
@@ -52,11 +50,11 @@ vec4 rotation(float theta,vec3 v){
 }
 
 vec4 turn(vec4 v,vec4 rot){
-  return normalize(times(times(rot,v),inverse(rot)));
+  return times(times(rot,v),inverse(rot));
 }
 
 //distance function
-float df1(vec3 z){
+float df1(vec3 z){//sphere
   return length(z-vec3(0,0,0))-1.0;
 }
 float df2(vec3 z){//plane
@@ -65,6 +63,7 @@ float df2(vec3 z){//plane
 float distanceFunc(vec3 z){
   return min(df1(z),df2(z));
 }
+
 vec3 getNormal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
@@ -73,6 +72,7 @@ vec3 getNormal(vec3 p){
     distanceFunc(p + vec3(0.0, 0.0,   d)) - distanceFunc(p + vec3(0.0, 0.0,  -d))
   ));
 }
+
 float genShadow(vec3 rd, vec3 ro,vec3 normal){
   if (dot(rd,normal)<0.0){return 1.0;}
   float h = 0.0;
@@ -89,6 +89,7 @@ float genShadow(vec3 rd, vec3 ro,vec3 normal){
   }
   return 1.0 - shadowCoef + r * shadowCoef;
 }
+
 rayobj raymarch(vec3 ray,vec3 origin){
   float distance = 0.0;
   float rLen = 0.0;
@@ -108,6 +109,7 @@ rayobj raymarch(vec3 ray,vec3 origin){
   rayobj ans=rayobj(rPos,distance,distmin,rLen);
   return ans;
 }
+
 vec3 materialCol(vec3 rPos){
   vec3 color;
   float dist=distanceFunc(rPos);
@@ -120,6 +122,7 @@ vec3 materialCol(vec3 rPos){
   }
   return color+vec3(0.1);
 }
+
 float specfanc(float x){
   float m=100.0;
   float norm_factor = ( m + 2.0 ) / ( 2.0 * PI );
@@ -128,6 +131,7 @@ float specfanc(float x){
   light_specular=clamp(light_specular,0.0,1.0);
   return min(light_specular,1.0);
 }
+
 float difffanc(float dot){
   //float m=0.8;
   return max(0.0,dot);
@@ -137,6 +141,7 @@ float difffanc(float dot){
   //float ans=diff*m+(1.0-m);
   //return ans;
 }
+
 vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
   float ver=dot(-ray,normal);
   vec3 refRay=ray+2.0*ver*normal;
@@ -157,6 +162,7 @@ vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
   
   return vec4(looks,1.0);
 }
+
 float globallightfanc(vec3 normal,vec3 origin){
   rayobj temp=raymarch(normal,origin);
   float a=0.20;
@@ -167,11 +173,11 @@ float globallightfanc(vec3 normal,vec3 origin){
 void main(void){
   // fragment position
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-
+  //fix:真上真下が見えない
   vec3 xaxes = normalize(cross(cDir,vec3(0.0,0.0,1.0)));
-  vec3 yaxes = -normalize(cross(cDir,xaxes));
-  vec4 rot = times(rotation(-p.x*fov,yaxes),rotation(p.y*fov,xaxes));
-  vec3 ray = turn(vec4(0,cDir),rot).yzw;
+  vec3 yaxes = normalize(-cross(cDir,xaxes));
+  vec4 rot = normalize(times(rotation(-p.x*fov,yaxes),rotation(p.y*fov,xaxes)));
+  vec3 ray = normalize(turn(vec4(0,cDir),rot).yzw);
 
   rayobj temp=raymarch(ray,cPos);
   vec3 rPos=temp.rPos;
