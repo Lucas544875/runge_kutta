@@ -12,21 +12,13 @@ const float fov = 30.0 * 0.5 * PI / 180.0;
 const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
 
-struct colorobj{
-  vec3 col1;
-  vec3 col2;
-  vec3 col3;
-  vec3 colelse;
-  vec3 fog;
-  vec3 reffog;
-};
-const colorobj material=colorobj(vec3(1.0),vec3(1.0),vec3(1.0),vec3(1.0),vec3(0.1),vec3(1.0));
-
 struct rayobj{
   vec3 rPos;
   float dist;
   float distmin;
   float len;
+  int objectid;//これでマテリアルを管理
+  mat3 jacobi;
 };
 
 //quaternion
@@ -62,6 +54,12 @@ float df2(vec3 z){//plane
 }
 float distanceFunc(vec3 z){
   return min(df1(z),df2(z));
+}
+
+//こうする予定
+void sphere(inout rayobj ray){
+  ray.dist = length(ray.rPos-vec3(0,0,0))-1.0;
+  ray.objectid = 0;
 }
 
 vec3 getNormal(vec3 p){
@@ -106,7 +104,7 @@ rayobj raymarch(vec3 ray,vec3 origin){
     r = min(r, distance * 16.0 / rLen);
     rPos = cPos + ray * rLen;
   }
-  rayobj ans=rayobj(rPos,distance,distmin,rLen);
+  rayobj ans=rayobj(rPos,distance,distmin,rLen,0,mat3(0.0));
   return ans;
 }
 
@@ -114,11 +112,11 @@ vec3 materialCol(vec3 rPos){
   vec3 color;
   float dist=distanceFunc(rPos);
   if (dist==df1(rPos)){
-    color=material.col1;
+    color=vec3(1.0);
   }else if (dist==df2(rPos)){
-    color=material.col2;
+    color=vec3(1.0);
   }else{
-    color=material.colelse;
+    color=vec3(1.0);
   }
   return color+vec3(0.1);
 }
@@ -158,7 +156,7 @@ vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
   looks*=diff;
   looks+=vec3(spec);
   looks*=shadow;
-  looks=(looks)*(1.0-fog)+material.fog*(fog);
+  looks=(looks)*(1.0-fog)+vec3(0.1)*(fog);
   
   return vec4(looks,1.0);
 }
@@ -217,7 +215,7 @@ void main(void){
   looks.z=pow(looks.z,1.0/2.2);
   looks*=shadow;
   looks*=globallight;
-  looks=(looks)*(1.0-fog)+material.fog*(fog);
+  looks=(looks)*(1.0-fog)+vec3(0.1)*(fog);
   gl_FragColor = vec4(looks, 1.0);
 }
 `
