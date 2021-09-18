@@ -8,18 +8,28 @@ uniform vec3  cPos;
 
 const float PI = 3.14159265;
 const float E = 2.71828182;
+const float INFINITY = 1.0/0.0;
 const float fov = 30.0 * 0.5 * PI / 180.0;
 const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
 
 struct rayobj{
   vec3 rPos;
-  float dist;
+  float distance;
   float distmin;
   float len;
   int objectid;//これでマテリアルを管理
   mat3 jacobi;
 };
+
+struct material{
+  vec3 color;
+  float refrectance;
+};
+// redMetal = material(vec3(1.0,0.0,0,0),0.6);
+// redMetal.color #=> vec3(1.0,0.0,0,0)
+//こんな感じ？
+
 
 //quaternion
 vec4 times(vec4 q1,vec4 q2){
@@ -46,28 +56,40 @@ vec4 turn(vec4 v,vec4 rot){
 }
 
 //distance function
-float df1(vec3 z){//sphere
-  return length(z-vec3(0,0,0))-1.0;
-}
-float df2(vec3 z){//plane
-  return dot(z, vec3(0.0,0.0,1.0))+1.0;
-}
-float distanceFunc(vec3 z){
-  return min(df1(z),df2(z));
+float sphere(vec3 z,vec3 center,float radius){
+  return length(z-center)-radius;
 }
 
-//こうする予定
+float sphere1(vec3 z){
+  return sphere(z,vec3(0.0),1.0);
+}
+
+float plane(vec3 z,vec3 normal,float offset){
+  return dot(z,normalize(normal))+offset;
+}
+
+float floor1(vec3 z){//plane
+  return plane(z,vec3(0.0,0.0,1.0),1.0);
+}
+
+float distanceFunction(vec3 z){
+  return min(sphere1(z),floor1(z));
+}
+
+//jacobi行列
+
+
 void sphere(inout rayobj ray){
-  ray.dist = length(ray.rPos-vec3(0,0,0))-1.0;
+  ray.distance = length(ray.rPos-vec3(0,0,0))-1.0;
   ray.objectid = 0;
 }
 
 vec3 getNormal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
-    distanceFunc(p + vec3(  d, 0.0, 0.0)) - distanceFunc(p + vec3( -d, 0.0, 0.0)),
-    distanceFunc(p + vec3(0.0,   d, 0.0)) - distanceFunc(p + vec3(0.0,  -d, 0.0)),
-    distanceFunc(p + vec3(0.0, 0.0,   d)) - distanceFunc(p + vec3(0.0, 0.0,  -d))
+    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
+    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
+    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
   ));
 }
 
@@ -78,7 +100,7 @@ float genShadow(vec3 rd, vec3 ro,vec3 normal){
   float r = 1.0;
   float shadowCoef = 0.5;
   for(float t = 0.0; t < 50.0; t++){
-    h = distanceFunc(ro + rd * c);
+    h = distanceFunction(ro + rd * c);
     if(h < 0.001){
       return shadowCoef;
     }
@@ -88,32 +110,34 @@ float genShadow(vec3 rd, vec3 ro,vec3 normal){
   return 1.0 - shadowCoef + r * shadowCoef;
 }
 
-rayobj raymarch(vec3 ray,vec3 origin){
+rayobj raymarch(vec3 direction,vec3 origin){
   float distance = 0.0;
-  float rLen = 0.0;
-  float distmin = 100.0;
+  float len = 0.0;
+  float distmin = INFINITY;
   vec3  rPos = origin;
-  float shadowCoef=0.5;
+  int objectid;
+  mat3 jacobi;
   float r=1.0;
+
   for(int i = 0; i < Iteration; i++){
-    distance = distanceFunc(rPos);
+    distance = distanceFunction(rPos);
     if(distance < 0.001){break;}
-    rLen += distance;
-    if(rLen > 100.0){break;}
+    len += distance;
+    if(len > 100.0){break;}
     distmin=min(distance,distmin);
-    r = min(r, distance * 16.0 / rLen);
-    rPos = cPos + ray * rLen;
+    r = min(r, distance * 16.0 / len);
+    rPos = cPos + direction * len;
   }
-  rayobj ans=rayobj(rPos,distance,distmin,rLen,0,mat3(0.0));
+  rayobj ans=rayobj(rPos,distance,distmin,len,objectid,jacobi);
   return ans;
 }
 
 vec3 materialCol(vec3 rPos){
   vec3 color;
-  float dist=distanceFunc(rPos);
-  if (dist==df1(rPos)){
+  float dist=distanceFunction(rPos);
+  if (dist==sphere1(rPos)){
     color=vec3(1.0);
-  }else if (dist==df2(rPos)){
+  }else if (dist==floor1(rPos)){
     color=vec3(1.0);
   }else{
     color=vec3(1.0);
@@ -175,12 +199,9 @@ void main(void){
   vec3 xaxes = normalize(cross(cDir,vec3(0.0,0.0,1.0)));
   vec3 yaxes = normalize(-cross(cDir,xaxes));
   vec4 rot = normalize(times(rotation(-p.x*fov,yaxes),rotation(p.y*fov,xaxes)));
-  vec3 ray = normalize(turn(vec4(0,cDir),rot).yzw);
+  vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
-  rayobj temp=raymarch(ray,cPos);
-  vec3 rPos=temp.rPos;
-  float distance=temp.dist;
-  float rLen=temp.len;
+  rayobj ray=raymarch(direction,cPos);
 
   // hit check 
   float diff=0.0;
@@ -190,19 +211,19 @@ void main(void){
   vec3 color=vec3(0.0);
   float fog=1.0;
   float globallight=0.0;
-  if(abs(distance) < 0.001){
-    vec3 normal = getNormal(rPos);
+  if(abs(ray.distance) < 0.001){
+    vec3 normal = getNormal(ray.rPos);
     // light
-    vec3 halfLE = normalize(lightDir - ray);
+    vec3 halfLE = normalize(lightDir - direction);
     diff = difffanc(dot(lightDir, normal));
     spec = specfanc(dot(halfLE, normal));
-    reflect =reflectfanc(ray,rPos+normal*0.001,normal);//raymarch*2
-    globallight=globallightfanc(normal,rPos+normal*0.001);//raymarch
+    reflect =reflectfanc(direction,ray.rPos+normal*0.001,normal);//raymarch*2
+    globallight=globallightfanc(normal,ray.rPos+normal*0.001);//raymarch
     //shadow
-    shadow = genShadow(lightDir,rPos + normal * 0.001,normal);//raymarch
-    fog=clamp((rLen-0.0)/30.0,0.0,1.0);
+    shadow = genShadow(lightDir,ray.rPos + normal * 0.001,normal);//raymarch
+    fog=clamp((ray.len-0.0)/30.0,0.0,1.0);
     //else
-    color = materialCol(rPos);
+    color = materialCol(ray.rPos);
   }
   vec3 looks=color;
   if (reflect[3]==1.0){
