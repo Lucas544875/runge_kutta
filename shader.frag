@@ -14,14 +14,33 @@ const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
 
 struct rayobj{
-  vec3 rPos;
-  vec3 direction;
+  vec3  rPos;
+  vec3  direction;
   float distance;
   float distmin;
   float len;
-  int objectId;//これでマテリアルを管理
-  mat3 jacobi;
+  int   objectId;
+  mat3  jacobi;
 };
+/*
+objectId
+0:saihate
+1:floor1
+2:sphere1
+99:else
+*/
+
+struct effectConfig{
+  bool spec;
+  bool diff;
+  bool gaus;
+  bool fog;
+  bool insideshadow;
+  bool shadow;//reymarch
+  bool reflect;//reymarch
+  bool globallight;//reymarch
+};
+const effectConfig effect = effectConfig(true,true,true,true,false,true,false,false);
 
 struct material{
   vec3 color;
@@ -31,8 +50,6 @@ struct material{
 const material cyan = material(vec3(0.0,1.0,1.0),0.6);
 const material white = material(vec3(1.0,1.0,1.0),0.6);
 const material errorObject = material(vec3(1.0,0.0,0.0),0.6);
-//こんな感じ？
-
 
 //quaternion
 vec4 times(vec4 q1,vec4 q2){
@@ -89,14 +106,28 @@ int objectId(vec3 z,float distance){
   }
 }
 
-//jacobi行列
+mat3 jacobi(vec3 z,int objectId){
+  if (objectId == 1){
+    
+    return mat3(0.0);
+  }else if (objectId == 2){
+    return mat3(0.0);
+  }else{
+    return mat3(0.0)
+  }
+};
 
-
-void sphere(inout rayobj ray){
-  ray.distance = length(ray.rPos-vec3(0,0,0))-1.0;
-  ray.objectId = 0;
+vec3 materialCol(int objectId){
+  if (objectId == 1){
+    return white.color;
+  }else if (objectId == 2){
+    return cyan.color;
+  }else{
+    return errorObject.color;
+  }
 }
 
+//jacobi行列に置き換え
 vec3 getNormal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
@@ -128,44 +159,16 @@ void raymarch(inout rayobj ray){
     ray.distance = distanceFunction(ray.rPos);
     if(ray.distance < 0.001){
       ray.objectId = objectId(ray.rPos,ray.distance);
+      ray.jacobi = jacobi(ray.rPos,ray.objectId);
       break;
     }
     ray.len += ray.distance;
-    if(ray.len > 100.0){break;}
+    if(ray.len > 100.0){
+      ray.objectId = 0;
+      break;
+    }
     ray.distmin=min(ray.distance,ray.distmin);
     ray.rPos = cPos + ray.direction * ray.len;
-  }
-}
-
-rayobj raymarch(vec3 direction,vec3 origin){
-  float distance = 0.0;
-  float len = 0.0;
-  float distmin = INFINITY;
-  vec3  rPos = origin;
-  int objectId;
-  mat3 jacobi;
-  float r=1.0;
-
-  for(int i = 0; i < Iteration; i++){
-    distance = distanceFunction(rPos);
-    if(distance < 0.001){break;}
-    len += distance;
-    if(len > 100.0){break;}
-    distmin=min(distance,distmin);
-    r = min(r, distance * 16.0 / len);
-    rPos = cPos + direction * len;
-  }
-  rayobj ans=rayobj(rPos,direction,distance,distmin,len,objectId,jacobi);
-  return ans;
-}
-
-vec3 materialCol(int objectId){
-  if (objectId == 1){
-    return white.color;
-  }else if (objectId == 2){
-    return cyan.color;
-  }else{
-    return errorObject.color;
   }
 }
 
@@ -188,6 +191,8 @@ float difffanc(float dot){
   //return ans;
 }
 
+//todo:反射の実装
+/*
 vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
   float ver=dot(-ray,normal);
   vec3 refRay=ray+2.0*ver*normal;
@@ -200,20 +205,20 @@ vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
   float shadow = genShadow(lightDir,temp.rPos + refNormal * 0.001,refNormal);//raymarch
   float fog=clamp(temp.len/50.0,0.0,1.0);
 
-  vec3 looks=color;
-  looks*=diff;
-  looks+=vec3(spec);
-  looks*=shadow;
-  looks=(looks)*(1.0-fog)+vec3(0.1)*(fog);
+  vec3 fragColor=color;
+  fragColor*=diff;
+  fragColor+=vec3(spec);
+  fragColor*=shadow;
+  fragColor=(fragColor)*(1.0-fog)+vec3(0.1)*(fog);
   
-  return vec4(looks,1.0);
-}
+  return vec4(fragColor,1.0);
+}*/
 
 float globallightfanc(vec3 normal,vec3 origin){
-  rayobj temp=raymarch(normal,origin);
-  float a=0.20;
-  float ans=min(a,temp.len)/a;
-  return ans;
+  rayobj ray = rayobj(origin,normal,0.0,INFINITY,0.0,0,mat3(0.0));
+  raymarch(ray);
+  float near = 0.20;
+  return min(near,ray.len)/near;
 }
 
 void main(void){
@@ -225,43 +230,46 @@ void main(void){
   vec4 rot = normalize(times(rotation(-p.x*fov,yAxes),rotation(p.y*fov,xAxes)));
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
+  //レイの定義と移動
   rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0,mat3(0.0));
   raymarch(ray);
 
-  // hit check 
+  //エフェクト
+  vec3 fragColor=vec3(0.0);
+
   float diff=0.0;
   float spec=0.0;
-  vec4 reflect=vec4(0.0);
+  //vec4 reflect=vec4(0.0);
   float shadow=1.0;
-  vec3 color=vec3(0.0);
   float fog=1.0;
   float globallight=0.0;
+
   if(abs(ray.distance) < 0.001){
     vec3 normal = getNormal(ray.rPos);
     // light
     vec3 halfLE = normalize(lightDir - direction);
     diff = difffanc(dot(lightDir, normal));
     spec = specfanc(dot(halfLE, normal));
-    reflect =reflectfanc(direction,ray.rPos+normal*0.001,normal);//raymarch*2
+    //reflect =reflectfanc(direction,ray.rPos+normal*0.001,normal);//raymarch*2 todo:反射
     globallight=globallightfanc(normal,ray.rPos+normal*0.001);//raymarch
     //shadow
     shadow = genShadow(lightDir,ray.rPos + normal * 0.001,normal);//raymarch
     fog=clamp((ray.len-0.0)/30.0,0.0,1.0);
     //else
-    color = materialCol(ray.objectId);
+    fragColor = materialCol(ray.objectId);
   }
-  vec3 looks=color;
-  if (reflect[3]==1.0){
-    looks=looks*0.8+reflect.xyz*0.2;
-  }
-  looks+=vec3(spec);
-  looks*=diff;
-  looks.x=pow(looks.x,1.0/2.2);
-  looks.y=pow(looks.y,1.0/2.2);
-  looks.z=pow(looks.z,1.0/2.2);
-  looks*=shadow;
-  looks*=globallight;
-  looks=(looks)*(1.0-fog)+vec3(0.1)*(fog);
-  gl_FragColor = vec4(looks, 1.0);
+  
+  //if (reflect[3]==1.0){
+  //  fragColor=fragColor*0.8+reflect.xyz*0.2;
+  //}
+  fragColor+=vec3(spec);
+  fragColor*=diff;
+  fragColor.x=pow(fragColor.x,1.0/2.2);
+  fragColor.y=pow(fragColor.y,1.0/2.2);
+  fragColor.z=pow(fragColor.z,1.0/2.2);
+  fragColor*=shadow;
+  fragColor*=globallight;
+  fragColor=(fragColor)*(1.0-fog)+vec3(0.1)*(fog);
+  gl_FragColor = vec4(fragColor,1.0);
 }
 `
