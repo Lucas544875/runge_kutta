@@ -23,13 +23,6 @@ struct rayobj{
   vec3  normal;
   vec3  fragColor;
 };
-/*
-objectId消す
-0:saihate
-1:floor1
-2:sphere1
-99:else
-*/
 
 struct effectConfig{
   bool reflect;    //反射
@@ -42,20 +35,13 @@ struct effectConfig{
 };
 const effectConfig effect = effectConfig(
   true,true,false,true,false,true,true
-  );
-
-/*struct material{
-  vec3 color;
-  float refrectance;
-};*/
+);
 
 const int SAIHATE = 0;
 const int CYAN = 1;
 const int WHITE = 2;
 const int ERROR = 99;
-//const material cyan = material(vec3(0.0,0.5,0.5),0.5);
-//const material white = material(vec3(1.0,1.0,1.0),0.6);
-//const material errorObject = material(vec3(1.0,1.0,1.0),0.6);
+
 
 //quaternion
 vec4 times(vec4 q1,vec4 q2){
@@ -81,6 +67,7 @@ vec4 turn(vec4 v,vec4 rot){
   return times(times(rot,v),inverse(rot));
 }
 
+//シーン設定
 //distance function
 float sphere(vec3 z,vec3 center,float radius){
   return length(z-center)-radius;
@@ -167,7 +154,7 @@ void specularFunc(inout rayobj ray){//鏡面反射
   float x = dot(halfLE, ray.normal);
   float light_specular=1.0/(-30.0*(clamp(x,0.0,1.0)-1.0));
   light_specular=clamp(light_specular,0.0,1.0);
-  ray.fragColor += min(light_specular,1.0);
+  ray.fragColor = clamp(ray.fragColor + min(light_specular,1.0),0.0,1.0);
 }
 
 void diffuseFunc(inout rayobj ray){//拡散光
@@ -212,34 +199,51 @@ void gammaFunc(inout rayobj ray){//ガンマ補正
   ray.fragColor.z=pow(ray.fragColor.z,1.0/2.2);
 }
 
-void reflectFunc(inout rayobj ray,float refrectance){
-  float dot = -dot(ray.direction,ray.normal);
-  vec3 direction=ray.direction+2.0*dot*ray.normal;
-  
-  rayobj reflectRay = rayobj(ray.rPos+ray.normal*0.001,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
-  raymarch(reflectRay);
+const int MAX_REFRECT = 3;
+void reflectFunc(inout rayobj ray){
+  rayobj rays[MAX_REFRECT+1];
+  rays[0] = ray;
+  int escape = MAX_REFRECT;
+  for (int i = 0;i<MAX_REFRECT;i++){
+    float dot = -dot(rays[i].direction,rays[i].normal);
+    vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+    raymarch(rays[i+1]);
 
-  if(abs(ray.distance) < 0.001){
-    reflectRay.fragColor = color(reflectRay.material);
+    if(abs(rays[i].distance) < 0.001){
+      rays[i+1].fragColor = color(rays[i+1].material);
+    }else{
+      escape = i;
+      break;
+    }
+  }
+
+  for (int i = MAX_REFRECT;i >= 0;i--){
+    if (i>escape){continue;}
 
     if (effect.specular){
-      specularFunc(reflectRay);
+      specularFunc(rays[i]);
     }
     if (effect.diffuse){
-      diffuseFunc(reflectRay);
+      diffuseFunc(rays[i]);
     }
     if (effect.shadow){
-      shadowFunc(reflectRay);
+      shadowFunc(rays[i]);
     }
     if (effect.globallight){
-      globallightFunc(reflectRay);
+      globallightFunc(rays[i]);
+    }
+    if (effect.fog){
+      fogFunc(rays[i]);
+    }
+
+    if (i == 0){
+      ray.fragColor = rays[i].fragColor;
+    }else{
+      float refrectance = refrectance(rays[i-1].material);
+      rays[i-1].fragColor = mix(rays[i-1].fragColor,rays[i].fragColor,refrectance);
     }
   }
-  if (effect.fog){
-    fogFunc(reflectRay);
-  }
-
-  ray.fragColor = mix(ray.fragColor,reflectRay.fragColor,refrectance);
 }
 
 void main(void){
@@ -260,7 +264,7 @@ void main(void){
     ray.fragColor = color(ray.material);
 
     if (effect.reflect){
-      reflectFunc(ray,refrectance(ray.material));
+      reflectFunc(ray);
     }
     if (effect.specular){
       specularFunc(ray);

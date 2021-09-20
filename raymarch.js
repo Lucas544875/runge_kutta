@@ -27,7 +27,7 @@ window.onload = function(){
 
   //視点の設定
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-10.0,0.0);
+  cPos=Quatarnion.vec(0.0,-1.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
