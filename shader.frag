@@ -1,224 +1,290 @@
 let fragmentShader =`
 precision mediump float;
-uniform float time;
+uniform float time;//使ってない
 uniform vec2  mouse;
 uniform vec2  resolution;
-uniform mat4  keyary;
+uniform vec3  cDir;
+uniform vec3  cPos;
 
 const float PI = 3.14159265;
-const float E = 2.718281828459;
-const float angle = 30.0;
-const float fov = angle * 0.5 * PI / 180.0;
-const vec3 lightDir = normalize(vec3(1.0,-0.8,0.3));
+const float E = 2.71828182;
+const float INFINITY = 1.e20;
+const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
+const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
-const float theta=45.0;
-const vec3 cPos = vec3(0.0,-10.0,1.0);
-const vec3 cDir=vec3(-85.0,0.0,0.0)*PI/180.0;
-//const vec3 cDir=vec3(-50.0,0.0,-45.0)*PI/180.0;
-
-struct colorobj{
-  vec3 col1;
-  vec3 col2;
-  vec3 col3;
-  vec3 colelse;
-  vec3 fog;
-  vec3 reffog;
-};
-const colorobj material=colorobj(vec3(1.0),vec3(1.0),vec3(1.0),vec3(1.0),vec3(0.1),vec3(1.0));
 
 struct rayobj{
-  vec3 rPos;
-  float dist;
+  vec3  rPos;
+  vec3  direction;
+  float distance;
   float distmin;
   float len;
+  int   material;
+  vec3  normal;
+  vec3  fragColor;
 };
-/*
-void sphereFold(inout vec3 z, inout float dz) {
-	float r2 = dot(z,z);
-	if (r<minRadius2) { 
-		// linear inner scaling
-		float temp = (fixedRadius2/minRadius2);
-		z *= temp;
-		dz*= temp;
-	} else if (r2<fixedRadius2) { 
-		// this is the actual sphere inversion
-		float temp =(fixedRadius2/r2);
-		z *= temp;
-		dz*= temp;
-	}
+
+struct effectConfig{
+  bool reflect;    //反射
+  bool specular;   //ハイライト(鏡面反射)
+  bool diffuse;    //拡散光
+  bool shadow;     //ソフトシャドウ
+  bool globallight;//大域照明
+  bool fog;        //霧
+  bool gamma;      //ガンマ補正
+};
+const effectConfig effect = effectConfig(
+  true,true,false,true,false,true,true
+);
+
+const int SAIHATE = 0;
+const int CYAN = 1;
+const int WHITE = 2;
+const int ERROR = 99;
+
+
+//quaternion
+vec4 times(vec4 q1,vec4 q2){
+  return vec4 (
+    q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2] - q1[3]*q2[3],
+    q1[0]*q2[1] + q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2],
+    q1[0]*q2[2] - q1[1]*q2[3] + q1[2]*q2[0] + q1[3]*q2[1],
+    q1[0]*q2[3] + q1[1]*q2[2] - q1[2]*q2[1] + q1[3]*q2[0]
+  );
 }
-void boxFold(inout vec3 z, inout float dz) {
-	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
+
+vec4 inverse(vec4 q){
+  return vec4(q[0],-q[1],-q[2],-q[3]);
 }
-float DE(vec3 z)
-{
-	vec3 offset = z;
-	float dr = 1.0;
-	for (int n = 0; n < Iterations; n++) {
-		boxFold(z,dr);       // Reflect
-		sphereFold(z,dr);    // Sphere Inversion
-    z=Scale*z + offset;  // Scale & Translate
-    dr = dr*abs(Scale)+1.0;
-	}
-	float r = length(z);
-	return r/abs(dr);
+
+vec4 rotation(float theta,vec3 v){
+  float c = cos(theta/2.0);
+  float s = sin(theta/2.0);
+  return normalize(vec4(c,v.x*s,v.y*s,v.z*s));
 }
-*/
-float df1(vec3 z){
-  return length(z-vec3(0,0,0))-1.0;
+
+vec4 turn(vec4 v,vec4 rot){
+  return times(times(rot,v),inverse(rot));
 }
-float df2(vec3 z){//plane
-  return dot(z, vec3(0.0,0.0,1.0))+1.0;
+
+//シーン設定
+//distance function
+float sphere(vec3 z,vec3 center,float radius){
+  return length(z-center)-radius;
 }
-float distanceFunc(vec3 z){
-  return min(df1(z),df2(z));
+
+float sphere1(vec3 z){
+  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
+  return sphere(p,vec3(1.5,1.5,0.0),1.0);
 }
-vec3 getNormal(vec3 p){
+
+float plane(vec3 z,vec3 normal,float offset){
+  return dot(z,normalize(normal))+offset;
+}
+
+float floor1(vec3 z){//plane
+  return plane(z,vec3(0.0,0.0,1.0),1.0);
+}
+
+float distanceFunction(vec3 z){
+  return min(sphere1(z),floor1(z));
+}
+
+//視線と物体の交点で実行
+int materialOf(vec3 z,float distance){
+  if (floor1(z) == distance){
+    return CYAN;
+  }else if (sphere1(z) == distance){
+    return WHITE;
+  }else{
+    return ERROR;
+  }
+}
+
+vec3 color(int material){
+  if (material == CYAN){
+    return vec3(0.0,0.5,0.5);
+  }else if (material == WHITE){
+    return vec3(1.0,1.0,1.0);
+  }else{
+    return vec3(1.0,0.0,0.0);
+  }
+}
+
+float refrectance(int material){
+  if (material == CYAN){
+    return 0.5;
+  }else if (material == WHITE){
+    return 0.6;
+  }else{
+    return 0.0;
+  }
+}
+
+vec3 normal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
-    distanceFunc(p + vec3(  d, 0.0, 0.0)) - distanceFunc(p + vec3( -d, 0.0, 0.0)),
-    distanceFunc(p + vec3(0.0,   d, 0.0)) - distanceFunc(p + vec3(0.0,  -d, 0.0)),
-    distanceFunc(p + vec3(0.0, 0.0,   d)) - distanceFunc(p + vec3(0.0, 0.0,  -d))
+    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
+    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
+    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
   ));
 }
-float genShadow(vec3 rd, vec3 ro,vec3 normal){
-  if (dot(rd,normal)<0.0){return 1.0;}
+
+void raymarch(inout rayobj ray){
+  for(int i = 0; i < Iteration; i++){
+    ray.distance = distanceFunction(ray.rPos);
+    if(ray.distance < 0.001){
+      ray.material = materialOf(ray.rPos,ray.distance);
+      ray.normal = normal(ray.rPos);
+      break;
+    }
+    ray.len += ray.distance;
+    if(ray.len > 100.0){
+      ray.material = SAIHATE;
+      break;
+    }
+    ray.distmin=min(ray.distance,ray.distmin);
+    ray.rPos = cPos + ray.direction * ray.len;
+  }
+}
+
+//ライティング
+void specularFunc(inout rayobj ray){//鏡面反射
+  vec3 halfLE = normalize(LightDir - ray.direction);
+  float x = dot(halfLE, ray.normal);
+  float light_specular=1.0/(-30.0*(clamp(x,0.0,1.0)-1.0));
+  light_specular=clamp(light_specular,0.0,1.0);
+  ray.fragColor = clamp(ray.fragColor + min(light_specular,1.0),0.0,1.0);
+}
+
+void diffuseFunc(inout rayobj ray){//拡散光
+  ray.fragColor *= max(0.0,dot(LightDir, ray.normal));
+}
+
+void shadowFunc(inout rayobj ray){//ソフトシャドウ
+  vec3 ro=ray.rPos + ray.normal * 0.001;
+  if (dot(LightDir,ray.normal)<0.0){return;}
   float h = 0.0;
   float c = 0.001;
   float r = 1.0;
   float shadowCoef = 0.5;
   for(float t = 0.0; t < 50.0; t++){
-    h = distanceFunc(ro + rd * c);
+    h = distanceFunction(ro + LightDir * c);
     if(h < 0.001){
-      return shadowCoef;
+      ray.fragColor *= shadowCoef;
+      return;
     }
     //r = min(r, h * 16.0 / c);
     c += h;
   }
-  return 1.0 - shadowCoef + r * shadowCoef;
+  ray.fragColor *= 1.0 - shadowCoef + r * shadowCoef;
 }
-rayobj raymarch(vec3 ray,vec3 origin){
-  float distance = 0.0;
-  float rLen = 0.0;
-  float distmin = 100.0;
-  vec3  rPos = origin;
-  float shadowCoef=0.5;
-  float r=1.0;
-  for(int i = 0; i < Iteration; i++){
-    distance = distanceFunc(rPos);
-    if(distance < 0.001){break;}
-    rLen += distance;
-    if(rLen > 100.0){break;}
-    distmin=min(distance,distmin);
-    r = min(r, distance * 16.0 / rLen);
-    rPos = cPos + ray * rLen;
-  }
-  rayobj ans=rayobj(rPos,distance,distmin,rLen);
-  return ans;
-}
-vec3 materialCol(vec3 rPos){
-  vec3 color;
-  float dist=distanceFunc(rPos);
-  if (dist==df1(rPos)){
-    color=material.col1;
-  }else if (dist==df2(rPos)){
-    color=material.col2;
-  }else{
-    color=material.colelse;
-  }
-  return color+vec3(0.1);
-}
-float specfanc(float x){
-  float m=100.0;
-  float norm_factor = ( m + 2.0 ) / ( 2.0 * PI );
-  //float light_specular =  norm_factor*pow(clamp(max(0.0,x),0.0,1.0),m);
-  float light_specular=1.0/(-30.0*(clamp(x,0.0,1.0)-1.0));
-  light_specular=clamp(light_specular,0.0,1.0);
-  return min(light_specular,1.0);
-}
-float difffanc(float dot){
-  //float m=0.8;
-  return max(0.0,dot);
-  //float a=0.1;
-  //diff=(1.0/(1.0+exp(-a*(diff-0.5)))-0.5)*(1.0/(1.0/(1.0+exp(-0.5*a))-0.5))/2.0+0.5;
-  //diff=min(diff*1.2,1.0);
-  //float ans=diff*m+(1.0-m);
-  //return ans;
-}
-vec4 reflectfanc(vec3 ray,vec3 origin,vec3 normal){
-  float ver=dot(-ray,normal);
-  vec3 refRay=ray+2.0*ver*normal;
-  rayobj temp=raymarch(refRay,origin);
-  vec3 refNormal = getNormal(temp.rPos);
-  vec3 halfLE = normalize(lightDir - refRay);
-  vec3 color=materialCol(temp.rPos);
-  float diff = difffanc(dot(lightDir, refNormal));
-  float spec = specfanc(dot(halfLE, refNormal));
-  float shadow = genShadow(lightDir,temp.rPos + refNormal * 0.001,refNormal);//raymarch
-  float fog=clamp(temp.len/50.0,0.0,1.0);
 
-  vec3 looks=color;
-  looks*=diff;
-  looks+=vec3(spec);
-  looks*=shadow;
-  looks=(looks)*(1.0-fog)+material.fog*(fog);
-  
-  return vec4(looks,1.0);
+void globallightFunc(inout rayobj ray){//大域照明
+  vec3 origin = ray.rPos+ray.normal*0.001;
+  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  raymarch(ray2);
+  float near = 0.20;
+  ray.fragColor *= min(near,ray.len)/near;
 }
-float globallightfanc(vec3 normal,vec3 origin){
-  rayobj temp=raymarch(normal,origin);
-  float a=0.20;
-  float ans=min(a,temp.len)/a;
-  return ans;
+
+void fogFunc(inout rayobj ray){//霧
+  float fog = clamp((ray.len-0.0)/30.0,0.0,1.0);
+  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.1)*(fog);
 }
+
+void gammaFunc(inout rayobj ray){//ガンマ補正
+  ray.fragColor.x=pow(ray.fragColor.x,1.0/2.2);
+  ray.fragColor.y=pow(ray.fragColor.y,1.0/2.2);
+  ray.fragColor.z=pow(ray.fragColor.z,1.0/2.2);
+}
+
+const int MAX_REFRECT = 3;
+void reflectFunc(inout rayobj ray){
+  rayobj rays[MAX_REFRECT+1];
+  rays[0] = ray;
+  int escape = MAX_REFRECT;
+  for (int i = 0;i<MAX_REFRECT;i++){
+    float dot = -dot(rays[i].direction,rays[i].normal);
+    vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+    raymarch(rays[i+1]);
+
+    if(abs(rays[i].distance) < 0.001){
+      rays[i+1].fragColor = color(rays[i+1].material);
+    }else{
+      escape = i;
+      break;
+    }
+  }
+
+  for (int i = MAX_REFRECT;i >= 0;i--){
+    if (i>escape){continue;}
+
+    if (effect.specular){
+      specularFunc(rays[i]);
+    }
+    if (effect.diffuse){
+      diffuseFunc(rays[i]);
+    }
+    if (effect.shadow){
+      shadowFunc(rays[i]);
+    }
+    if (effect.globallight){
+      globallightFunc(rays[i]);
+    }
+    if (effect.fog){
+      fogFunc(rays[i]);
+    }
+
+    if (i == 0){
+      ray.fragColor = rays[i].fragColor;
+    }else{
+      float refrectance = refrectance(rays[i-1].material);
+      rays[i-1].fragColor = mix(rays[i-1].fragColor,rays[i].fragColor,refrectance);
+    }
+  }
+}
+
 void main(void){
   // fragment position
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-  mat3 rotmatx=mat3(1.0,0.0,0.0,0.0,cos(cDir.x),sin(cDir.x),0.0,-sin(cDir.x),cos(cDir.x));
-  mat3 rotmaty=mat3(cos(cDir.y),0.0,-sin(cDir.y),0.0,1.0,0.0,sin(cDir.y),0.0,cos(cDir.y));
-  mat3 rotmatz=mat3(cos(cDir.z),sin(cDir.z),0.0,-sin(cDir.z),cos(cDir.z),0.0,0.0,0.0,1.0);
-  mat3 rotxyz=rotmaty*rotmatx*rotmatz;
-  vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)))*rotxyz;	
+  //fix:真上真下が見えない
+  vec3 xAxes = normalize(cross(cDir,vec3(0.0,0.0,1.0)));
+  vec3 yAxes = normalize(-cross(cDir,xAxes));
+  vec4 rot = normalize(times(rotation(-p.x*FOV,yAxes),rotation(p.y*FOV,xAxes)));
+  vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
-  rayobj temp=raymarch(ray,cPos);
-  vec3 rPos=temp.rPos;
-  float distance=temp.dist;
-  float rLen=temp.len;
+  //レイの定義と移動
+  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  raymarch(ray);
 
-  // hit check 
-  float diff=0.0;
-  float spec=0.0;
-  vec4 reflect=vec4(0.0);
-  float shadow=1.0;
-  vec3 color=vec3(0.0);
-  float fog=1.0;
-  float globallight=0.0;
-  if(abs(distance) < 0.001){
-    vec3 normal = getNormal(rPos);
-    // light
-    vec3 halfLE = normalize(lightDir - ray);
-    diff = difffanc(dot(lightDir, normal));
-    spec = specfanc(dot(halfLE, normal));
-    reflect =reflectfanc(ray,rPos+normal*0.001,normal);//raymarch*2
-    globallight=globallightfanc(normal,rPos+normal*0.001);//raymarch
-    //shadow
-    shadow = genShadow(lightDir,rPos + normal * 0.001,normal);//raymarch
-    fog=clamp((rLen-0.0)/30.0,0.0,1.0);
-    //else
-    color = materialCol(rPos);
+  //エフェクト
+  if(abs(ray.distance) < 0.001){//物体表面にいる場合
+    ray.fragColor = color(ray.material);
+
+    if (effect.reflect){
+      reflectFunc(ray);
+    }
+    if (effect.specular){
+      specularFunc(ray);
+    }
+    if (effect.diffuse){
+      diffuseFunc(ray);
+    }
+    if (effect.shadow){
+      shadowFunc(ray);
+    }
+    if (effect.globallight){
+      globallightFunc(ray);
+    }
   }
-  vec3 looks=color;
-  if (reflect[3]==1.0){
-    looks=looks*0.8+reflect.xyz*0.2;
+  if (effect.fog){
+    fogFunc(ray);
   }
-  looks+=vec3(spec);
-  looks*=diff;
-  looks.x=pow(looks.x,1.0/2.2);
-  looks.y=pow(looks.y,1.0/2.2);
-  looks.z=pow(looks.z,1.0/2.2);
-  looks*=shadow;
-  looks*=globallight;
-  looks=(looks)*(1.0-fog)+material.fog*(fog);
-  gl_FragColor = vec4(looks, 1.0);
+  if (effect.gamma){
+    gammaFunc(ray);
+  }
+  gl_FragColor = vec4(ray.fragColor,1.0);
 }
 `
