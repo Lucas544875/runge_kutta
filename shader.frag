@@ -19,12 +19,12 @@ struct rayobj{
   float distance;
   float distmin;
   float len;
-  int   objectId;
+  int   material;
   vec3  normal;
   vec3  fragColor;
 };
 /*
-objectId
+objectId消す
 0:saihate
 1:floor1
 2:sphere1
@@ -44,14 +44,18 @@ const effectConfig effect = effectConfig(
   true,true,false,true,false,true,true
   );
 
-struct material{
+/*struct material{
   vec3 color;
   float refrectance;
-};
+};*/
 
-const material cyan = material(vec3(0.0,0.5,0.5),0.5);
-const material white = material(vec3(1.0,1.0,1.0),0.6);
-const material errorObject = material(vec3(1.0,0.0,0.0),0.6);
+const int SAIHATE = 0;
+const int CYAN = 1;
+const int WHITE = 2;
+const int ERROR = 99;
+//const material cyan = material(vec3(0.0,0.5,0.5),0.5);
+//const material white = material(vec3(1.0,1.0,1.0),0.6);
+//const material errorObject = material(vec3(1.0,1.0,1.0),0.6);
 
 //quaternion
 vec4 times(vec4 q1,vec4 q2){
@@ -100,23 +104,33 @@ float distanceFunction(vec3 z){
 }
 
 //視線と物体の交点で実行
-int objectId(vec3 z,float distance){
+int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
-    return 1;
+    return CYAN;
   }else if (sphere1(z) == distance){
-    return 2;
+    return WHITE;
   }else{
-    return 99;
+    return ERROR;
   }
 }
 
-material materialOf(int objectId){
-  if (objectId == 1){
-    return white;
-  }else if (objectId == 2){
-    return cyan;
+vec3 color(int material){
+  if (material == CYAN){
+    return vec3(0.0,0.5,0.5);
+  }else if (material == WHITE){
+    return vec3(1.0,1.0,1.0);
   }else{
-    return errorObject;
+    return vec3(1.0,0.0,0.0);
+  }
+}
+
+float refrectance(int material){
+  if (material == CYAN){
+    return 0.5;
+  }else if (material == WHITE){
+    return 0.6;
+  }else{
+    return 0.0;
   }
 }
 
@@ -133,13 +147,13 @@ void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
     ray.distance = distanceFunction(ray.rPos);
     if(ray.distance < 0.001){
-      ray.objectId = objectId(ray.rPos,ray.distance);
+      ray.material = materialOf(ray.rPos,ray.distance);
       ray.normal = normal(ray.rPos);
       break;
     }
     ray.len += ray.distance;
     if(ray.len > 100.0){
-      ray.objectId = 0;
+      ray.material = SAIHATE;
       break;
     }
     ray.distmin=min(ray.distance,ray.distmin);
@@ -206,7 +220,7 @@ void reflectFunc(inout rayobj ray,float refrectance){
   raymarch(reflectRay);
 
   if(abs(ray.distance) < 0.001){
-    reflectRay.fragColor = materialOf(reflectRay.objectId).color;
+    reflectRay.fragColor = color(reflectRay.material);
 
     if (effect.specular){
       specularFunc(reflectRay);
@@ -243,11 +257,10 @@ void main(void){
 
   //エフェクト
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
-    material obj = materialOf(ray.objectId);
-    ray.fragColor = obj.color;
+    ray.fragColor = color(ray.material);
 
     if (effect.reflect){
-      reflectFunc(ray,obj.refrectance);
+      reflectFunc(ray,refrectance(ray.material));
     }
     if (effect.specular){
       specularFunc(ray);
