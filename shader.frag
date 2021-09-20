@@ -40,14 +40,16 @@ struct effectConfig{
   bool fog;        //霧
   bool gamma;      //ガンマ補正
 };
-const effectConfig effect = effectConfig(false,true,true,true,false,true,true);
+const effectConfig effect = effectConfig(
+  true,true,false,true,false,true,true
+  );
 
 struct material{
   vec3 color;
   float refrectance;
 };
 
-const material cyan = material(vec3(0.0,1.0,1.0),0.6);
+const material cyan = material(vec3(0.0,0.5,0.5),0.5);
 const material white = material(vec3(1.0,1.0,1.0),0.6);
 const material errorObject = material(vec3(1.0,0.0,0.0),0.6);
 
@@ -81,7 +83,8 @@ float sphere(vec3 z,vec3 center,float radius){
 }
 
 float sphere1(vec3 z){
-  return sphere(z,vec3(0.0),1.0);
+  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
+  return sphere(p,vec3(1.5,1.5,0.0),1.0);
 }
 
 float plane(vec3 z,vec3 normal,float offset){
@@ -107,28 +110,17 @@ int objectId(vec3 z,float distance){
   }
 }
 
-vec3 materialCol(int objectId){
+material materialOf(int objectId){
   if (objectId == 1){
-    return white.color;
+    return white;
   }else if (objectId == 2){
-    return cyan.color;
+    return cyan;
   }else{
-    return errorObject.color;
+    return errorObject;
   }
 }
 
-mat3 jacobi(vec3 z,int objectId){
-  if (objectId == 1){
-    return mat3(0.0);
-  }else if (objectId == 2){
-    return mat3(0.0);
-  }else{
-    return mat3(0.0);
-  }
-}
-
-//jacobi行列に置き換え
-vec3 normal(vec3 p,int objectId){
+vec3 normal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
     distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
@@ -142,7 +134,7 @@ void raymarch(inout rayobj ray){
     ray.distance = distanceFunction(ray.rPos);
     if(ray.distance < 0.001){
       ray.objectId = objectId(ray.rPos,ray.distance);
-      ray.normal = normal(ray.rPos,ray.objectId);
+      ray.normal = normal(ray.rPos);
       break;
     }
     ray.len += ray.distance;
@@ -206,28 +198,35 @@ void gammaFunc(inout rayobj ray){//ガンマ補正
   ray.fragColor.z=pow(ray.fragColor.z,1.0/2.2);
 }
 
-//todo:反射の実装
-/*
-vec4 reflectfunc(vec3 ray,vec3 origin,vec3 normal){
-  float ver=dot(-ray,normal);
-  vec3 refRay=ray+2.0*ver*normal;
-  rayobj temp=raymarch(refRay,origin);
-  vec3 refNormal = getNormal(temp.rPos);
-  vec3 halfLE = normalize(LightDir - refRay);
-  vec3 color=materialCol(temp.objectId);
-  float diff = difffunc(dot(LightDir, refNormal));
-  float spec = specfunc(dot(halfLE, refNormal));
-  float shadow = genShadow(LightDir,temp.rPos + refNormal * 0.001,refNormal);//raymarch
-  float fog=clamp(temp.len/50.0,0.0,1.0);
+void reflectFunc(inout rayobj ray,float refrectance){
+  float dot = -dot(ray.direction,ray.normal);
+  vec3 direction=ray.direction+2.0*dot*ray.normal;
+  
+  rayobj reflectRay = rayobj(ray.rPos+ray.normal*0.001,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  raymarch(reflectRay);
 
-  vec3 fragColor=color;
-  fragColor*=diff;
-  fragColor+=vec3(spec);
-  fragColor*=shadow;
-  fragColor=(fragColor)*(1.0-fog)+vec3(0.1)*(fog);
+  if(abs(ray.distance) < 0.001){
+    reflectRay.fragColor = materialOf(reflectRay.objectId).color;
 
-  return vec4(fragColor,1.0);
-}*/
+    if (effect.specular){
+      specularFunc(reflectRay);
+    }
+    if (effect.diffuse){
+      diffuseFunc(reflectRay);
+    }
+    if (effect.shadow){
+      shadowFunc(reflectRay);
+    }
+    if (effect.globallight){
+      globallightFunc(reflectRay);
+    }
+  }
+  if (effect.fog){
+    fogFunc(reflectRay);
+  }
+
+  ray.fragColor = mix(ray.fragColor,reflectRay.fragColor,refrectance);
+}
 
 void main(void){
   // fragment position
@@ -243,13 +242,12 @@ void main(void){
   raymarch(ray);
 
   //エフェクト
-  vec3 fragColor=vec3(0.0);
-
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
-    ray.fragColor = materialCol(ray.objectId);
+    material obj = materialOf(ray.objectId);
+    ray.fragColor = obj.color;
 
     if (effect.reflect){
-      //reflectFunc(ray);
+      reflectFunc(ray,obj.refrectance);
     }
     if (effect.specular){
       specularFunc(ray);
@@ -264,7 +262,6 @@ void main(void){
       globallightFunc(ray);
     }
   }
-  
   if (effect.fog){
     fogFunc(ray);
   }
