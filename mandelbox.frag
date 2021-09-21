@@ -34,7 +34,7 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  true,true,false,true,false,true,true
+  false,true,true,true,false,true,true
 );
 
 const int SAIHATE = 0;
@@ -86,8 +86,44 @@ float floor1(vec3 z){//plane
   return plane(z,vec3(0.0,0.0,1.0),1.0);
 }
 
+void sphereFold(inout vec3 z, inout float dz) {
+  float minRadius2=0.60;//定数
+  float fixedRadius2=2.65;//定数
+	float r2 = dot(z,z);
+	if (r2<minRadius2) { 
+		// linear inner scaling
+		float temp = fixedRadius2/(minRadius2);
+		z *= temp;
+		dz*= temp;
+	} else if (r2<fixedRadius2) { 
+		// this is the actual sphere inversion
+		float temp =fixedRadius2/r2;
+		z *= temp;
+		dz*= temp;
+	}
+}
+
+void boxFold(inout vec3 z, inout float dz) {
+  float foldingLimit=1.14;//定数
+	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
+}
+
+float DE(vec3 z){
+  float Scale=-2.18;//定数
+	vec3 offset = z;
+	float dr = 1.0;
+	for (int n = 0; n < 25; n++) {
+		boxFold(z,dr);       // Reflect
+		sphereFold(z,dr);    // Sphere Inversion
+    z=Scale*z + offset;  // Scale & Translate
+    dr = dr*abs(Scale)+1.0;
+	}
+	float r = length(z);
+	return r/abs(dr);
+}
+
 float distanceFunction(vec3 z){
-  return min(sphere1(z),floor1(z));
+  return DE(z);
 }
 
 //マテリアルの設定
@@ -95,6 +131,8 @@ int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
     return CYAN;
   }else if (sphere1(z) == distance){
+    return WHITE;
+  }else if (DE(z) == distance){
     return WHITE;
   }else{
     return ERROR;
@@ -190,7 +228,7 @@ void globallightFunc(inout rayobj ray){//大域照明
 
 void fogFunc(inout rayobj ray){//霧
   float fog = clamp((ray.len-0.0)/30.0,0.0,1.0);
-  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.1)*(fog);
+  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.05)*(fog);
 }
 
 void gammaFunc(inout rayobj ray){//ガンマ補正

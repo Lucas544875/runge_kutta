@@ -27,7 +27,7 @@ window.onload = function(){
 
   //視点の設定
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-1.0,0.0);
+  cPos=Quatarnion.vec(0.0,-10.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -272,9 +272,9 @@ function cMove(dx,dy) {
 //key
 //w=87,a=65,s=83,d=68,z=90,x=88
 //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
+/*
 function key(e){
   return;
-  /*
   if (e.keyCode==87){// w
     keyary[2]+=0.1*diff;
   }else if(e.keyCode==83){// s
@@ -311,6 +311,6 @@ function key(e){
     keyary[6]-=0.01*diff;
   }else if(e.keyCode==226){// \
     keyary[6]+=0.01*diff;
-  }
-  */
+  } 
 }
+*/
