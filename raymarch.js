@@ -45,7 +45,6 @@ window.onload = function(){
   let prg = create_program(create_shader('vs'), create_shader('fs'));
 
   //unifoem,atteibute変数の設定
-  //time:完成まで使わなかったら消す
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
@@ -88,7 +87,7 @@ window.onload = function(){
 };
 
 function render(){
-  if (run==false) {
+  if (run === false) {
     return;
   }
   window.requestAnimationFrame(render, c);
@@ -213,7 +212,8 @@ function create_ibo(data){
 
 //check box チェックされている間だけレンダリング
 function checkChange(e) {
-  run = e.currentTpitchet.checked;
+  run = eCheck.checked;
+  console.log(run);
   if(run){
     startTimeary[0] = new Date().getTime();
     render();
@@ -239,6 +239,7 @@ function mouseMove(e){
 };
 
 function mouseDown(e) {
+  if (run===false){return;};
   mouseflag=true;
   centorx=e.offsetX;
   centory=e.offsetY;

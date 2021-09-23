@@ -1,6 +1,6 @@
 let fragmentShader =`
 precision mediump float;
-uniform float time;//使ってない
+uniform float time;
 uniform vec2  mouse;
 uniform vec2  resolution;
 uniform vec3  cDir;
@@ -12,6 +12,7 @@ const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
 const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
 const int Iteration =128;
+const int MAX_REFRECT = 2;
 
 struct rayobj{
   vec3  rPos;
@@ -190,17 +191,16 @@ void globallightFunc(inout rayobj ray){//大域照明
 
 void fogFunc(inout rayobj ray){//霧
   float fog = clamp((ray.len-0.0)/30.0,0.0,1.0);
-  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.1)*(fog);
+  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.3)*(fog);
 }
 
 void gammaFunc(inout rayobj ray){//ガンマ補正
-  ray.fragColor.x=pow(ray.fragColor.x,1.0/2.2);
-  ray.fragColor.y=pow(ray.fragColor.y,1.0/2.2);
-  ray.fragColor.z=pow(ray.fragColor.z,1.0/2.2);
+  ray.fragColor.x=pow(ray.fragColor.x,2.2);
+  ray.fragColor.y=pow(ray.fragColor.y,2.2);
+  ray.fragColor.z=pow(ray.fragColor.z,2.2);
 }
 
-const int MAX_REFRECT = 3;
-void reflectFunc(inout rayobj ray){
+void reflectFunc(inout rayobj ray){//反射
   rayobj rays[MAX_REFRECT+1];
   rays[0] = ray;
   int escape = MAX_REFRECT;
