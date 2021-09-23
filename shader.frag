@@ -18,6 +18,7 @@ struct rayobj{
   vec3  rPos;     //レイの場所
   vec3  direction;//方向
   float distance; //距離関数の返り値
+  float mindist;  //かすめた最短距離
   float shadowSmoothing;//ソフトシャドウのぼかし係数
   float len;      //出発点からの距離
   int   material; //マテリアルID
@@ -31,11 +32,12 @@ struct effectConfig{
   bool diffuse;    //拡散光
   bool shadow;     //ソフトシャドウ
   bool globallight;//大域照明
+  bool grow;       //グロー
   bool fog;        //霧
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  true,true,true,true,true,true,true
+  false,false,false,false,false,false,true,true
 );
 
 const int SAIHATE = 0;
@@ -143,6 +145,7 @@ vec3 normal(vec3 p){
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
     ray.distance = distanceFunction(ray.rPos);
+    ray.mindist = min(ray.mindist,ray.distance);
     ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.material = materialOf(ray.rPos,ray.distance);
@@ -175,7 +178,7 @@ const float shadowCoef = 0.4;
 void shadowFunc(inout rayobj ray){//ソフトシャドウ
   if (dot(LightDir,ray.normal)<0.0){return;}
   vec3 origin=ray.rPos + ray.normal * 0.001;
-  rayobj ray2 = rayobj(origin,LightDir,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,LightDir,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   if (ray2.distance<0.001){
     ray.fragColor *= shadowCoef;
@@ -187,15 +190,22 @@ void shadowFunc(inout rayobj ray){//ソフトシャドウ
 
 void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
-  rayobj ray2 = rayobj(origin,ray.normal,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   float near = 0.10;
   ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
 }
 
+const float growSise = 0.2;
+void growFunc(inout rayobj ray){//グロー
+  if (ray.distance<0.001){return;}
+  float grow =1.0 - min(ray.mindist/growSise,1.0);
+  ray.fragColor = clamp(ray.fragColor+0.1*grow,0.0,1.0);
+}
+
 const vec3 fogColor = vec3(243.0, 240.0, 215.0)/256.0;
 void fogFunc(inout rayobj ray){//霧
-  float fog = clamp((ray.len-10.0)/30.0,0.0,1.0);
+  float fog = clamp((ray.len-10.0)/20.0,0.0,1.0);
   ray.fragColor = (ray.fragColor)*(1.0-fog)+fogColor*(fog);
 }
 
@@ -212,7 +222,7 @@ void reflectFunc(inout rayobj ray){//反射
   for (int i = 0;i<MAX_REFRECT;i++){
     float dot = -dot(rays[i].direction,rays[i].normal);
     vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
-    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
     raymarch(rays[i+1]);
 
     if(abs(rays[i].distance) < 0.001){
@@ -261,7 +271,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト
@@ -286,6 +296,9 @@ void main(void){
   }
   if (effect.fog){
     fogFunc(ray);
+  }
+  if (effect.grow){
+    growFunc(ray);
   }
   if (effect.gamma){
     gammaFunc(ray);
