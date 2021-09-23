@@ -35,12 +35,13 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  true,true,false,true,false,true,true
+  false,true,false,false,false,false,true
 );
 
 const int SAIHATE = 0;
 const int CYAN = 1;
 const int WHITE = 2;
+const int DEBUG = 98;
 const int ERROR = 99;
 
 
@@ -96,17 +97,23 @@ int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
     return CYAN;
   }else if (sphere1(z) == distance){
-    return WHITE;
+    return DEBUG;
   }else{
     return ERROR;
   }
 }
 
-vec3 color(int material){
-  if (material == CYAN){
-    return vec3(0.0,0.5,0.5);
-  }else if (material == WHITE){
+vec3 debugCol(vec3 rPos){
+  return fract(rPos);
+}
+
+vec3 color(rayobj ray){
+  if (ray.material == CYAN){
+    return vec3(0.0,1.0,1.0);
+  }else if (ray.material == WHITE){
     return vec3(1.0,1.0,1.0);
+  }else if (ray.material == DEBUG){
+    return debugCol(ray.rPos);
   }else{
     return vec3(1.0,0.0,0.0);
   }
@@ -117,6 +124,8 @@ float refrectance(int material){
     return 0.5;
   }else if (material == WHITE){
     return 0.6;
+  }else if (material == DEBUG){
+    return 0.3;
   }else{
     return 0.0;
   }
@@ -151,11 +160,11 @@ void raymarch(inout rayobj ray){
 
 //ライティング
 void specularFunc(inout rayobj ray){//鏡面反射
-  vec3 halfLE = normalize(LightDir - ray.direction);
-  float x = dot(halfLE, ray.normal);
-  float light_specular=1.0/(-30.0*(clamp(x,0.0,1.0)-1.0));
-  light_specular=clamp(light_specular,0.0,1.0);
-  ray.fragColor = clamp(ray.fragColor + min(light_specular,1.0),0.0,1.0);
+  float t = -dot(ray.direction,ray.normal);
+  vec3 reflection=ray.direction+2.0*t*ray.normal;
+  float x = dot(reflection,LightDir);
+  float specular=1.0/(50.0*(1.001-clamp(x,0.0,1.0)));
+  ray.fragColor = clamp(ray.fragColor+specular,0.0,1.0);
 }
 
 void diffuseFunc(inout rayobj ray){//拡散光
@@ -211,7 +220,7 @@ void reflectFunc(inout rayobj ray){//反射
     raymarch(rays[i+1]);
 
     if(abs(rays[i].distance) < 0.001){
-      rays[i+1].fragColor = color(rays[i+1].material);
+      rays[i+1].fragColor = color(rays[i+1]);
     }else{
       escape = i;
       break;
@@ -261,7 +270,7 @@ void main(void){
 
   //エフェクト
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
-    ray.fragColor = color(ray.material);
+    ray.fragColor = color(ray);
 
     if (effect.reflect){
       reflectFunc(ray);

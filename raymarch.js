@@ -212,7 +212,7 @@ function create_ibo(data){
 
 //check box チェックされている間だけレンダリング
 function checkChange(e) {
-  run = eCheck.checked;
+  run = e.currentTarget.checked;
   console.log(run);
   if(run){
     startTimeary[0] = new Date().getTime();

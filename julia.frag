@@ -21,17 +21,12 @@ void main(void){
   
   // ジュリア集合
   int j = 0;
-  vec2  point = p/zoom - mouse;
-  vec2  element = vec2(0.0, 0.0);
-  
+  vec2 z = p*2.0;
   // 漸化式
-  vec2 x = vec2(-0.345, 0.654);
-  vec2 y = vec2(time * 0.005, 0.0);
-  vec2 z = point;
   for(int i = 0; i < iteration; i++){
       j++;
       if(length(z) > 2.0){break;}
-      z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + x + y;
+      z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + mouse;
   }
   
   float s = sqrt(float(j) / float(iteration));
