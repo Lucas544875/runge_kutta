@@ -10,19 +10,19 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
+const vec3 LightDir = normalize(vec3(1.0,0.6,0.6));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
 struct rayobj{
-  vec3  rPos;
-  vec3  direction;
-  float distance;
-  float distmin;
-  float len;
-  int   material;
-  vec3  normal;
-  vec3  fragColor;
+  vec3  rPos;     //レイの場所
+  vec3  direction;//方向
+  float distance; //距離関数の返り値
+  float shadowSmoothing;//ソフトシャドウのぼかし係数
+  float len;      //出発点からの距離
+  int   material; //マテリアルID
+  vec3  normal;   //法線ベクトル
+  vec3  fragColor;//色
 };
 
 struct effectConfig{
@@ -35,7 +35,7 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  false,true,false,false,false,false,true
+  false,false,false,true,false,false,true
 );
 
 const int SAIHATE = 0;
@@ -76,16 +76,16 @@ float sphere(vec3 z,vec3 center,float radius){
 }
 
 float sphere1(vec3 z){
-  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
-  return sphere(p,vec3(1.5,1.5,0.0),1.0);
+  vec3 p = vec3(mod(z.x,2.0),mod(z.y,2.0),z.z);
+  return sphere(p,vec3(1.0,1.0,0.0),0.5);
 }
 
 float plane(vec3 z,vec3 normal,float offset){
-  return dot(z,normalize(normal))+offset;
+  return dot(z,normalize(normal))-offset;
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),1.0);
+  return plane(z,vec3(0.0,0.0,1.0),-0.5);
 }
 
 float distanceFunction(vec3 z){
@@ -121,7 +121,7 @@ vec3 color(rayobj ray){
 
 float refrectance(int material){
   if (material == CYAN){
-    return 0.5;
+    return 0.1;
   }else if (material == WHITE){
     return 0.6;
   }else if (material == DEBUG){
@@ -143,6 +143,7 @@ vec3 normal(vec3 p){
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
     ray.distance = distanceFunction(ray.rPos);
+    ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.material = materialOf(ray.rPos,ray.distance);
       ray.normal = normal(ray.rPos);
@@ -153,8 +154,7 @@ void raymarch(inout rayobj ray){
       ray.material = SAIHATE;
       break;
     }
-    ray.distmin=min(ray.distance,ray.distmin);
-    ray.rPos = cPos + ray.direction * ray.len;
+    ray.rPos += ray.distance * ray.direction;
   }
 }
 
@@ -171,28 +171,23 @@ void diffuseFunc(inout rayobj ray){//拡散光
   ray.fragColor *= max(0.0,dot(LightDir, ray.normal));
 }
 
+const float shadowCoef = 0.4;
 void shadowFunc(inout rayobj ray){//ソフトシャドウ
-  vec3 ro=ray.rPos + ray.normal * 0.001;
   if (dot(LightDir,ray.normal)<0.0){return;}
-  float h = 0.0;
-  float c = 0.001;
-  float r = 1.0;
-  float shadowCoef = 0.5;
-  for(float t = 0.0; t < 50.0; t++){
-    h = distanceFunction(ro + LightDir * c);
-    if(h < 0.001){
-      ray.fragColor *= shadowCoef;
-      return;
-    }
-    //r = min(r, h * 16.0 / c);
-    c += h;
+  vec3 origin=ray.rPos + ray.normal * 0.001;
+  rayobj ray2 = rayobj(origin,LightDir,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  raymarch(ray2);
+  if (ray2.distance<0.001){
+    ray.fragColor *= shadowCoef;
+  }else{
+    //ray.fragColor *= 1.0 - (1.0 - ray.shadowSmoothing) * shadowCoef;
+    ray.fragColor *= mix(shadowCoef,1.0,ray2.shadowSmoothing);
   }
-  ray.fragColor *= 1.0 - shadowCoef + r * shadowCoef;
 }
 
 void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
-  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,ray.normal,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   float near = 0.20;
   ray.fragColor *= min(near,ray.len)/near;
@@ -216,7 +211,7 @@ void reflectFunc(inout rayobj ray){//反射
   for (int i = 0;i<MAX_REFRECT;i++){
     float dot = -dot(rays[i].direction,rays[i].normal);
     vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
-    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
     raymarch(rays[i+1]);
 
     if(abs(rays[i].distance) < 0.001){
@@ -265,7 +260,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト
