@@ -27,7 +27,7 @@ window.onload = function(){
 
   //視点の設定
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-1.0,0.0);
+  cPos=Quatarnion.vec(0.0,-10.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -45,7 +45,6 @@ window.onload = function(){
   let prg = create_program(create_shader('vs'), create_shader('fs'));
 
   //unifoem,atteibute変数の設定
-  //time:完成まで使わなかったら消す
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
   uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
@@ -88,7 +87,7 @@ window.onload = function(){
 };
 
 function render(){
-  if (run==false) {
+  if (run === false) {
     return;
   }
   window.requestAnimationFrame(render, c);
@@ -213,7 +212,8 @@ function create_ibo(data){
 
 //check box チェックされている間だけレンダリング
 function checkChange(e) {
-  run = e.currentTpitchet.checked;
+  run = e.currentTarget.checked;
+  console.log(run);
   if(run){
     startTimeary[0] = new Date().getTime();
     render();
@@ -239,6 +239,7 @@ function mouseMove(e){
 };
 
 function mouseDown(e) {
+  if (run===false){return;};
   mouseflag=true;
   centorx=e.offsetX;
   centory=e.offsetY;
@@ -272,9 +273,9 @@ function cMove(dx,dy) {
 //key
 //w=87,a=65,s=83,d=68,z=90,x=88
 //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
+/*
 function key(e){
   return;
-  /*
   if (e.keyCode==87){// w
     keyary[2]+=0.1*diff;
   }else if(e.keyCode==83){// s
@@ -311,6 +312,6 @@ function key(e){
     keyary[6]-=0.01*diff;
   }else if(e.keyCode==226){// \
     keyary[6]+=0.01*diff;
-  }
-  */
+  } 
 }
+*/
