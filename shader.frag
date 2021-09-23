@@ -35,7 +35,7 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  false,false,false,true,false,false,true
+  true,true,true,true,true,true,true
 );
 
 const int SAIHATE = 0;
@@ -168,7 +168,7 @@ void specularFunc(inout rayobj ray){//鏡面反射
 }
 
 void diffuseFunc(inout rayobj ray){//拡散光
-  ray.fragColor *= max(0.0,dot(LightDir, ray.normal));
+  ray.fragColor *= mix(0.9,1.0,dot(LightDir, ray.normal));
 }
 
 const float shadowCoef = 0.4;
@@ -189,13 +189,14 @@ void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
   rayobj ray2 = rayobj(origin,ray.normal,0.0,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
-  float near = 0.20;
-  ray.fragColor *= min(near,ray.len)/near;
+  float near = 0.10;
+  ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
 }
 
+const vec3 fogColor = vec3(243.0, 240.0, 215.0)/256.0;
 void fogFunc(inout rayobj ray){//霧
-  float fog = clamp((ray.len-0.0)/30.0,0.0,1.0);
-  ray.fragColor = (ray.fragColor)*(1.0-fog)+vec3(0.3)*(fog);
+  float fog = clamp((ray.len-10.0)/30.0,0.0,1.0);
+  ray.fragColor = (ray.fragColor)*(1.0-fog)+fogColor*(fog);
 }
 
 void gammaFunc(inout rayobj ray){//ガンマ補正
