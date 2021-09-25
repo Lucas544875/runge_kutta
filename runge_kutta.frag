@@ -5,6 +5,8 @@ uniform vec2  mouse;
 uniform vec2  resolution;
 uniform vec3  cDir;
 uniform vec3  cPos;
+uniform vec3  pendulum1;
+uniform vec3  pendulum2;
 
 const float PI = 3.14159265;
 const float E = 2.71828182;
@@ -102,14 +104,21 @@ float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
   return length(vec2(max(n1,0.0),max(n2,0.0))) + min(max(n1,n2),0.0);
 }
 
+const vec3 pendulumTop = vec3(0.0,0.0,2.0);
 float shaft1(vec3 z){
-  vec3 origin = vec3(0.0);
-  vec3 centroid1 = vec3(2.0,0.0,0.0);
-  return roundedCylinder(z,origin,centroid1,0.1);
+  return roundedCylinder(z,pendulumTop,pendulum1,0.1);
+}
+
+float shaft2(vec3 z){
+  return roundedCylinder(z,pendulum1,pendulum2,0.1);
 }
 
 float sphere1(vec3 z){
-  return sphere(z,vec3(1.0,1.0,0.0),0.5);
+  return sphere(z,pendulum1,0.2);
+}
+
+float sphere2(vec3 z){
+  return sphere(z,pendulum2,0.2);
 }
 
 float originPoint(vec3 z){
@@ -117,12 +126,15 @@ float originPoint(vec3 z){
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),-1.1);
+  return plane(z,vec3(0.0,0.0,1.0),-2.2);
 }
 
 float distanceFunction(vec3 z){//距離関数
-  float dist = min(shaft1(z),originPoint(z));
-  return min(dist,floor1(z));
+  float dist = min(floor1(z),shaft1(z));
+  dist = min(dist,shaft2(z));
+  dist = min(dist,sphere1(z));
+  dist = min(dist,sphere2(z));
+  return dist;
 }
 
 //マテリアルの設定
@@ -130,6 +142,12 @@ int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
     return GRID;
   }else if (shaft1(z) == distance){
+    return DEBUG;
+  }else if (shaft2(z) == distance){
+    return DEBUG;
+  }else if (sphere1(z) == distance){
+    return DEBUG;
+  }else if (sphere2(z) == distance){
     return DEBUG;
   }else if (originPoint(z) == distance){
     return WHITE;

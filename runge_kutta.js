@@ -12,7 +12,9 @@ let attStride = [];
 let run = true;
 let cDir;
 let cPos;
-const maxpitch = Math.sin(5/12*Math.PI);
+let pendulum1 = [0.0,0.0,0.0];
+let pendulum2 = [0.0,0.0,-2.0];
+const maxpitch = Math.cos(1/12*Math.PI);
 
 // onload
 window.onload = function(){
@@ -50,6 +52,8 @@ window.onload = function(){
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
   uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
   uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
+  uniLocation[5] = gl.getUniformLocation(prg, 'pendulum1');
+  uniLocation[6] = gl.getUniformLocation(prg, 'pendulum2');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -94,6 +98,9 @@ function render(){
   // 時間管理
   timenow = new Date().getTime();
   
+  //振り子の座標更新
+  rungekutta();
+
   // カラーバッファをクリア
   gl.clear(gl.COLOR_BUFFER_BIT);
   
@@ -103,6 +110,8 @@ function render(){
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   gl.uniform3fv(uniLocation[3], cDir.tovec());
   gl.uniform3fv(uniLocation[4], cPos.tovec());
+  gl.uniform3fv(uniLocation[5], pendulum1);
+  gl.uniform3fv(uniLocation[6], pendulum2);
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -208,6 +217,11 @@ function create_ibo(data){
   
   // 生成したIBOを返して終了
   return ibo;
+}
+
+//振り子の座標更新
+function rungekutta() {
+  return;
 }
 
 //check box チェックされている間だけレンダリング
