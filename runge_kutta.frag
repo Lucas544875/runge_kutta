@@ -37,7 +37,7 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  false,false,false,false,false,false,true,true
+  true,true,true,true,false,false,true,true
 );
 
 const int SAIHATE = 0;
@@ -82,40 +82,67 @@ float plane(vec3 z,vec3 normal,float offset){
   return dot(z,normalize(normal))-offset;
 }
 
-float roundedCylinder( vec3 z, float ra, float rb, float h ){
-  vec3 p = z+vec3(1.0,0.0,0.0);
-  vec2 d = vec2( length(p.xz)-2.0*ra+rb, abs(p.y) - h );
-  return min(max(d.x,d.y),0.0) + length(max(d,0.0)) - rb;
+//太さ 丸み 長さ
+//float roundedCylinder( vec3 z, float ra, float rb, float h ){
+//  vec3 p = z+vec3(1.0,0.0,0.0);
+//  vec2 d = vec2( length(p.xz)-2.0*ra+rb, abs(p.y) - h );
+//  return min(max(d.x,d.y),0.0) + length(max(d,0.0)) - rb;
+//}
+
+float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
+  float l = length(c2 - c1);
+  vec3 base1 = normalize(c2 - c1);
+  vec3 centor = (c1 + c2)/2.0;
+  vec3 cz = z - centor;
+  float orthograph1 = dot(cz,base1);
+  float n1 = abs(orthograph1)-l/2.0;
+  vec3 base2 = normalize(cz-orthograph1*base1);
+  float orthograph2 = dot(cz,base2);
+  float n2 = abs(orthograph2)-r;
+  return length(vec2(max(n1,0.0),max(n2,0.0))) + min(max(n1,n2),0.0);
 }
 
 float shaft1(vec3 z){
-  return roundedCylinder(z,0.5,0.0,2.0);
+  vec3 origin = vec3(0.0);
+  vec3 centroid1 = vec3(2.0,0.0,0.0);
+  return roundedCylinder(z,origin,centroid1,0.1);
 }
 
 float sphere1(vec3 z){
   return sphere(z,vec3(1.0,1.0,0.0),0.5);
 }
 
+float originPoint(vec3 z){
+  return sphere(z,vec3(0.0,0.0,0.0),0.1);
+}
+
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),-0.5);
+  return plane(z,vec3(0.0,0.0,1.0),-1.1);
 }
 
 float distanceFunction(vec3 z){//距離関数
-  return min(shaft1(z),floor1(z));
+  float dist = min(shaft1(z),originPoint(z));
+  return min(dist,floor1(z));
 }
 
 //マテリアルの設定
 int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
-    return CYAN;
+    return GRID;
   }else if (shaft1(z) == distance){
     return DEBUG;
+  }else if (originPoint(z) == distance){
+    return WHITE;
   }else{
     return ERROR;
   }
 }
 
 // 色設定
+vec3 gridCol(vec3 rPos){
+  return mix(vec3(0.3),vec3(step(fract(rPos.x),0.05),step(fract(rPos.y),0.05),step(fract(rPos.z),0.05)),0.5);
+}
+
 vec3 debugCol(vec3 rPos){
   return fract(rPos);
 }
@@ -125,6 +152,8 @@ vec3 color(rayobj ray){
     return vec3(0.0,1.0,1.0);
   }else if (ray.material == WHITE){
     return vec3(1.0,1.0,1.0);
+  }else if (ray.material == GRID){
+    return gridCol(ray.rPos);
   }else if (ray.material == DEBUG){
     return debugCol(ray.rPos);
   }else{
@@ -139,6 +168,8 @@ float refrectance(int material){
   }else if (material == WHITE){
     return 0.6;
   }else if (material == DEBUG){
+    return 0.3;
+  }else if (material == GRID){
     return 0.3;
   }else if (material == ERROR){
     return 0.0;
@@ -189,7 +220,7 @@ void diffuseFunc(inout rayobj ray){//拡散光
   ray.fragColor *= mix(0.9,1.0,dot(LightDir, ray.normal));
 }
 
-const float shadowCoef = 0.4;
+const float shadowCoef = 0.8;
 void shadowFunc(inout rayobj ray){//ソフトシャドウ
   if (dot(LightDir,ray.normal)<0.0){return;}
   vec3 origin=ray.rPos + ray.normal * 0.001;
@@ -218,7 +249,7 @@ void growFunc(inout rayobj ray){//グロー
   ray.fragColor = clamp(ray.fragColor+0.1*grow,0.0,1.0);
 }
 
-const vec3 fogColor = vec3(243.0, 240.0, 215.0)/256.0;
+const vec3 fogColor = vec3(160.0,216.0,239.0)/256.0;
 void fogFunc(inout rayobj ray){//霧
   float fog = clamp((ray.len-10.0)/20.0,0.0,1.0);
   ray.fragColor = (ray.fragColor)*(1.0-fog)+fogColor*(fog);
