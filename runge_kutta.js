@@ -32,7 +32,7 @@ window.onload = function(){
 
   //視点の設定
   cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-10.0,0.0);
+  cPos=Quatarnion.vec(0.0,-7.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -332,10 +332,10 @@ function key(e){
 // 物理パラメータ
 ////////////////////////////////////////////////////////////////////
 //ひもの長さ
-let L01 = 2;
-let L12 = 2;
+let L01 = 1;
+let L12 = 1;
 //支点の高さ
-let z_box = 2;
+let z_box = 1;
 //重力加速度
 let g = 10;
 //質量
@@ -344,7 +344,7 @@ let m2 = 1;
 
 //初速度
 let v1 = 0;
-let v2 = 15;
+let v2 = 10;
 var DeltaV = 1E-15;
 
 

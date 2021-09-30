@@ -97,21 +97,21 @@ float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
   return length(vec2(max(n1,0.0),max(n2,0.0))) + min(max(n1,n2),0.0);
 }
 
-const vec3 pendulumTop = vec3(0.0,0.0,2.0);
+const vec3 pendulumTop = vec3(0.0,0.0,1.0);
 float shaft1(vec3 z){
-  return roundedCylinder(z,pendulumTop,pendulum1,0.05);
+  return roundedCylinder(z,pendulumTop,pendulum1,0.025);
 }
 
 float shaft2(vec3 z){
-  return roundedCylinder(z,pendulum1,pendulum2,0.05);
+  return roundedCylinder(z,pendulum1,pendulum2,0.025);
 }
 
 float sphere1(vec3 z){
-  return sphere(z,pendulum1,0.2);
+  return sphere(z,pendulum1,0.1);
 }
 
 float sphere2(vec3 z){
-  return sphere(z,pendulum2,0.2);
+  return sphere(z,pendulum2,0.1);
 }
 
 float originPoint(vec3 z){
@@ -119,7 +119,7 @@ float originPoint(vec3 z){
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),-2.2);
+  return plane(z,vec3(0.0,0.0,1.0),-1.1);
 }
 
 float distanceFunction(vec3 z){//距離関数
@@ -151,7 +151,7 @@ int materialOf(vec3 z,float distance){
 
 // 色設定
 vec3 gridCol(vec3 rPos){
-  return mix(vec3(0.3),vec3(step(fract(rPos.x),0.05),step(fract(rPos.y),0.05),step(fract(rPos.z),0.05)),0.5);
+  return mix(vec3(0.3),vec3(step(fract(2.0*rPos.x),0.05),step(fract(2.0*rPos.y),0.05),step(fract(2.0*rPos.z),0.05)),0.5);
 }
 
 vec3 debugCol(vec3 rPos){
