@@ -84,13 +84,6 @@ float plane(vec3 z,vec3 normal,float offset){
   return dot(z,normalize(normal))-offset;
 }
 
-//太さ 丸み 長さ
-//float roundedCylinder( vec3 z, float ra, float rb, float h ){
-//  vec3 p = z+vec3(1.0,0.0,0.0);
-//  vec2 d = vec2( length(p.xz)-2.0*ra+rb, abs(p.y) - h );
-//  return min(max(d.x,d.y),0.0) + length(max(d,0.0)) - rb;
-//}
-
 float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
   float l = length(c2 - c1);
   vec3 base1 = normalize(c2 - c1);
@@ -106,11 +99,11 @@ float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
 
 const vec3 pendulumTop = vec3(0.0,0.0,2.0);
 float shaft1(vec3 z){
-  return roundedCylinder(z,pendulumTop,pendulum1,0.1);
+  return roundedCylinder(z,pendulumTop,pendulum1,0.05);
 }
 
 float shaft2(vec3 z){
-  return roundedCylinder(z,pendulum1,pendulum2,0.1);
+  return roundedCylinder(z,pendulum1,pendulum2,0.05);
 }
 
 float sphere1(vec3 z){

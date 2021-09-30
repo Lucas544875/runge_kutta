@@ -1,3 +1,5 @@
+import { Vector3 } from "./threejs/Vector3";
+
 // global
 let c, cw, ch, gl, eCheck;
 let mouseflag=false;
@@ -219,15 +221,9 @@ function create_ibo(data){
   return ibo;
 }
 
-//振り子の座標更新
-function rungekutta() {
-  return;
-}
-
 //check box チェックされている間だけレンダリング
 function checkChange(e) {
   run = e.currentTarget.checked;
-  console.log(run);
   if(run){
     startTimeary[0] = new Date().getTime();
     render();
@@ -329,3 +325,8 @@ function key(e){
   } 
 }
 */
+
+//振り子の座標更新
+function rungekutta() {
+  return;
+}
