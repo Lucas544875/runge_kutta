@@ -26,8 +26,8 @@ window.onload = function(){
   c.width=cw;
 
   //視点の設定
-  cDir=Quatarnion.vec(0.0,1.0,0.0);
-  cPos=Quatarnion.vec(0.0,-10.0,0.0);
+  cDir=Quatarnion.vec(-0.336,0.871,-0.363);
+  cPos=Quatarnion.vec(3.362,-8.716,3.637);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -235,6 +235,8 @@ function mouseMove(e){
     centory=e.offsetY;
     cMove(dx,dy);
     cRotate(dx,dy);
+    console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
+    console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
   };
 };
 
