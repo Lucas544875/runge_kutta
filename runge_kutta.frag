@@ -5,6 +5,7 @@ uniform vec2  mouse;
 uniform vec2  resolution;
 uniform vec3  cDir;
 uniform vec3  cPos;
+uniform vec3  pendulumTop;
 uniform vec3  pendulum1;
 uniform vec3  pendulum2;
 
@@ -97,7 +98,6 @@ float roundedCylinder(vec3 z,vec3 c1,vec3 c2, float r){
   return length(vec2(max(n1,0.0),max(n2,0.0))) + min(max(n1,n2),0.0);
 }
 
-const vec3 pendulumTop = vec3(0.0,0.0,1.0);
 float shaft1(vec3 z){
   return roundedCylinder(z,pendulumTop,pendulum1,0.025);
 }

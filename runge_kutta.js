@@ -12,6 +12,7 @@ let attStride = [];
 let run = true;
 let cDir;
 let cPos;
+let pendulumTop = [];
 let pendulum1 = [];
 let pendulum2 = [];
 let pendulum1v = [];
@@ -55,8 +56,9 @@ window.onload = function(){
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
   uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
   uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
-  uniLocation[5] = gl.getUniformLocation(prg, 'pendulum1');
-  uniLocation[6] = gl.getUniformLocation(prg, 'pendulum2');
+  uniLocation[5] = gl.getUniformLocation(prg, 'pendulumTop');
+  uniLocation[6] = gl.getUniformLocation(prg, 'pendulum1');
+  uniLocation[7] = gl.getUniformLocation(prg, 'pendulum2');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -114,8 +116,9 @@ function render(){
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   gl.uniform3fv(uniLocation[3], cDir.tovec());
   gl.uniform3fv(uniLocation[4], cPos.tovec());
-  gl.uniform3fv(uniLocation[5], pendulum1);
-  gl.uniform3fv(uniLocation[6], pendulum2);
+  gl.uniform3fv(uniLocation[5], pendulumTop);
+  gl.uniform3fv(uniLocation[6], pendulum1);
+  gl.uniform3fv(uniLocation[7], pendulum2);
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -337,7 +340,7 @@ let L12 = 1;
 //支点の高さ
 let z_box = 1;
 //重力加速度
-let g = 10;
+let g = 9.8;
 //質量
 let m1 = 1;
 let m2 = 1;
@@ -345,8 +348,6 @@ let m2 = 1;
 //初速度
 let v1 = 0;
 let v2 = 10;
-var DeltaV = 1E-15;
-
 
 //補正パラメータ
 let compensationK = 0.02; //補正ばね弾性係数
@@ -462,6 +463,7 @@ RK4.A = function( t, rs, vs ){
 let rs = [];
 let vs = [];
 
+pendulumTop = [0, 0, z_box];
 pendulum1 = [0, 0, z_box - L01];
 pendulum2 = [0, 0, z_box - L01 - L12];
 pendulum1v = [ v1, 0, 0];
@@ -472,15 +474,6 @@ rs[ 0 ] = new Vector3( 0, 0, z_box-L01 );
 vs[ 0 ] = new Vector3( 0, 0, 0 );
 rs[ 1 ] = new Vector3( 0, 0, z_box-L01-L12 );
 vs[ 1 ] = new Vector3( v2, 0, 0 );
-
-//初期値データ
-let data1 = [];
-let data2 = [];
-data1.push([ rs[ 0 ].x, rs[ 0 ].z ]);
-data2.push([ rs[ 1 ].x, rs[ 1 ].z ]);
-
-//let N = t_max/dt;
-//for( let i=1; i<=N; i++ ){
 
 //振り子の座標更新
 function rungekutta(flamecount) {
