@@ -33,11 +33,7 @@ void main(void){
   
   float s = sqrt(float(j) / float(iteration));
 
-  vec3 rgb = hsv(
-    s,
-    0.5,
-    sin(s*PI)
-  );
+  vec3 rgb = hsv(s,0.5,sin(s*PI));
   
   // 最終的な色の出力
   gl_FragColor = vec4(rgb, 1.0);
