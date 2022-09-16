@@ -70,6 +70,7 @@ vec4 turn(vec4 v,vec4 rot){
 
 //シーン設定
 //distance function
+//primitives
 float sphere(vec3 z,vec3 center,float radius){
   return length(z-center)-radius;
 }
