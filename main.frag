@@ -10,18 +10,20 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
+const vec3 LightDir = normalize(vec3(1.0,0.6,0.6));
 const int Iteration =128;
+const int MAX_REFRECT = 2;
 
 struct rayobj{
-  vec3  rPos;
-  vec3  direction;
-  float distance;
-  float distmin;
-  float len;
-  int   material;
-  vec3  normal;
-  vec3  fragColor;
+  vec3  rPos;     //レイの場所
+  vec3  direction;//方向
+  float distance; //距離関数の返り値
+  float mindist;  //かすめた最短距離
+  float shadowSmoothing;//ソフトシャドウのぼかし係数
+  float len;      //出発点からの距離
+  int   material; //マテリアルID
+  vec3  normal;   //法線ベクトル
+  vec3  fragColor;//色
 };
 
 struct effectConfig{
@@ -30,17 +32,18 @@ struct effectConfig{
   bool diffuse;    //拡散光
   bool shadow;     //ソフトシャドウ
   bool globallight;//大域照明
+  bool grow;       //グロー
   bool fog;        //霧
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  false,false,true,true,false,true,true
+  true,true,true,true,true,false,true,true
 );
 `
 
 let fs_main1 =`
 float distanceFunction(vec3 z){
-  return mandelBox(z);
+  return min(sphere1(z),floor1(z));
 }
 `
 
@@ -55,7 +58,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト
@@ -80,6 +83,9 @@ void main(void){
   }
   if (effect.fog){
     fogFunc(ray);
+  }
+  if (effect.grow){
+    growFunc(ray);
   }
   if (effect.gamma){
     gammaFunc(ray);
