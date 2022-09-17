@@ -49,13 +49,7 @@ const effectConfig effect = effectConfig(
 
 let fs_main1 =`
 dualVec distanceFunction(vec3 z){
-  dualVec d1 = sphere1(z);
-  dualVec d2 = floor1(z);
-  if (d1.d < d2.d){
-    return d1;
-  }else{
-    return d2;
-  }
+  return mandelBox(z);
 }
 `
 
