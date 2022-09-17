@@ -9,9 +9,9 @@ const int ERROR = 99;
 
 //マテリアルの設定
 int materialOf(vec3 z,float distance){
-  if (floor1(z) == distance){
+  if (floor1(z).d == distance){
     return GRID;
-  }else if (sphere1(z) == distance){
+  }else if (sphere1(z).d == distance){
     return DEBUG;
   }else{
     return ERROR;

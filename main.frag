@@ -36,14 +36,26 @@ struct effectConfig{
   bool fog;        //霧
   bool gamma;      //ガンマ補正
 };
+
+struct dualVec{ //三次元の二重数
+  float d;
+  vec3  e;
+};
+
 const effectConfig effect = effectConfig(
   true,true,true,true,true,false,true,true
 );
 `
 
 let fs_main1 =`
-float distanceFunction(vec3 z){
-  return min(sphere1(z),floor1(z));
+dualVec distanceFunction(vec3 z){
+  dualVec d1 = sphere1(z);
+  dualVec d2 = floor1(z);
+  if (d1.d < d2.d){
+    return d1;
+  }else{
+    return d2;
+  }
 }
 `
 

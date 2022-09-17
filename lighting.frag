@@ -1,22 +1,23 @@
 
 let fs_lighting =`
-vec3 normal(vec3 p){
-  float d = 0.0001;
-  return normalize(vec3(
-    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
-    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
-    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
-  ));
-}
+//vec3 normal(vec3 p){
+//  float d = 0.0001;
+//  return normalize(vec3(
+//    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
+//    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
+//    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
+//  ));
+//}
 
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
-    ray.distance = distanceFunction(ray.rPos);
+    dualVec dual = distanceFunction(ray.rPos);
+    ray.distance = dual.d;
+    ray.normal = dual.e;
     ray.mindist = min(ray.mindist,ray.distance);
     ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.material = materialOf(ray.rPos,ray.distance);
-      ray.normal = normal(ray.rPos);
       break;
     }
     ray.len += ray.distance;
