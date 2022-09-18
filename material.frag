@@ -5,6 +5,7 @@ const int CYAN = 1;
 const int WHITE = 2;
 const int GRID = 3;
 const int MANDEL = 4;
+const int LESSSTEP = 97;
 const int DEBUG = 98;
 const int ERROR = 99;
 
@@ -56,6 +57,8 @@ vec3 color(rayobj ray){
     return debugCol(ray.rPos);
   }else if (ray.material == MANDEL){
     return kadoCol(ray.rPos);
+  }else if (ray.material == LESSSTEP){
+    return vec3(0.9);
   }else{
     return vec3(1.0,0.0,0.0);
   }

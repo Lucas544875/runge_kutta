@@ -75,8 +75,8 @@ void main(void){
   raymarch(ray);
 
   //エフェクト
+  ray.fragColor = color(ray);
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
-    ray.fragColor = color(ray);
 
     if (effect.reflect){
       reflectFunc(ray);

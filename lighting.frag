@@ -10,15 +10,16 @@ void raymarch(inout rayobj ray){
     ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.material = materialOf(ray.rPos,ray.distance);
-      break;
+      return;
     }
     ray.len += ray.distance;
     if(ray.len > 100.0){
       ray.material = SAIHATE;
-      break;
+      return;
     }
     ray.rPos += ray.distance * ray.direction;
   }
+  ray.material = LESSSTEP;
 }
 
 //ライティング
@@ -31,7 +32,7 @@ void specularFunc(inout rayobj ray){//鏡面反射
 }
 
 void diffuseFunc(inout rayobj ray){//拡散光
-  ray.fragColor *= mix(0.9,1.0,dot(LightDir, ray.normal));
+  ray.fragColor *= mix(0.8,1.0,dot(LightDir, ray.normal));
 }
 
 const float shadowCoef = 0.4;
