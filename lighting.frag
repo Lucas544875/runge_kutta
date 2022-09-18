@@ -1,13 +1,5 @@
 
 let fs_lighting =`
-//vec3 normal(vec3 p){
-//  float d = 0.0001;
-//  return normalize(vec3(
-//    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
-//    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
-//    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
-//  ));
-//}
 
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){

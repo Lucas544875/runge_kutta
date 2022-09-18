@@ -70,6 +70,8 @@ float refrectance(int material){
     return 0.3;
   }else if (material == GRID){
     return 0.3;
+  }else if (material == MANDEL){
+    return 0.3;
   }else{
     return 0.0;
   }
