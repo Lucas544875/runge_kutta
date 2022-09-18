@@ -59,7 +59,11 @@ dualVec floor1(vec3 z){//plane
 //	return dualVec(r,normal);
 //}
 mat3 diag(vec3 v){
-	return mat3(v.x ,0,0, 0,v.y,0, 0,0,v.z);
+	return mat3(
+		v.x, 0.0, 0.0,
+		0.0, v.y, 0.0,
+		0.0, 0.0, v.z
+	);
 }
 
 float trace(mat3 m){
@@ -112,7 +116,8 @@ void sphereFold(inout vec3 z, inout mat3 dz) {
 void boxFold(inout vec3 z, inout mat3 dz) {
   float foldingLimit=1.14;//定数
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
-	dz = diag(sign(abs(z)-foldingLimit))*dz;
+	mat3 jacobi = diag(sign(abs(z)-foldingLimit));
+	dz = jacobi*dz;
 }
 
 dualVec mandelBox(vec3 z){
@@ -123,10 +128,11 @@ dualVec mandelBox(vec3 z){
 		boxFold(z,dr);       // Reflect
 		sphereFold(z,dr);    // Sphere Inversion
     z  = Scale*z + offset;  // Scale & Translate
-    dr = dr*Scale + mat3(0.9);
+    dr = Scale*dr + mat3(1.0);
 	}
-	float r = length(z)/Linfnorm(dr);
-	vec3 normal = normalize(z) * dr;
+	float r = length(z)/L1norm(dr);
+	r = min(r,0.3);//なぜか上手くいく
+	vec3 normal = dr * normalize(z);
 	return dualVec(r,normalize(normal));
 }
 `
