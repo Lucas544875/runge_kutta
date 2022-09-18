@@ -45,7 +45,7 @@ struct dualVec{ //三次元の二重数
 const effectConfig effect = effectConfig(
   false, //反射
   false, //ハイライト(鏡面反射)
-  false, //拡散光
+  true, //拡散光
   false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー

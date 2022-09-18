@@ -95,8 +95,15 @@ dualVec mandelBox(vec3 z){
     dr = Scale*dr + mat3(1.0);
 	}
 	float r = length(z)/L1norm(dr);
-	r = min(r,0.3);//なぜか上手くいく
-	vec3 normal = dr * normalize(z);
-	return dualVec(r,normalize(normal));
+	r = min(r,0.3);//なぜか動く
+	vec3 normal;
+	if (L1norm(dr) == L1norm(dr[0])){
+		normal = normalize(-dr[0]);
+	}else if(L1norm(dr) == L1norm(dr[1])){
+		normal = normalize(-dr[1]);
+	}else{
+		normal = normalize(-dr[2]);
+	}
+	return dualVec(r,normal);
 }
 `
