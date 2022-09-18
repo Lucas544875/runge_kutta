@@ -62,6 +62,30 @@ mat3 diag(vec3 v){
 	return mat3(v.x ,0,0, 0,v.y,0, 0,0,v.z);
 }
 
+float trace(mat3 m){
+	return m[0][0] + m[1][1] + m[2][2];
+}
+mat3 transpose(mat3 m){
+	return mat3 (
+		m[0][0], m[0][1], m[0][2],
+		m[1][0], m[1][1], m[1][2],
+		m[2][0], m[2][1], m[2][2]
+	);
+}
+
+float Fnorm(mat3 m){
+	return sqrt(trace(m * transpose(m)));
+}
+float L1norm(vec3 v){
+	return abs(v.x)+abs(v.y)+abs(v.z);
+}
+float L1norm(mat3 m){
+	return max(max(L1norm(m[0]),L1norm(m[1])),L1norm(m[2]));
+}
+float Linfnorm(mat3 m){
+	return L1norm(transpose(m));
+}
+
 void sphereFold(inout vec3 z, inout mat3 dz) {
   float minRadius2 = 0.60;//定数
   float fixedRadius2 = 2.65;//定数
@@ -81,7 +105,7 @@ void sphereFold(inout vec3 z, inout mat3 dz) {
 			);
 		jacobi *= temp/r2;
 		dz = jacobi*dz;
-		z  *= temp;
+		z *= temp;
 	}
 }
 
@@ -99,11 +123,10 @@ dualVec mandelBox(vec3 z){
 		boxFold(z,dr);       // Reflect
 		sphereFold(z,dr);    // Sphere Inversion
     z  = Scale*z + offset;  // Scale & Translate
-    dr = dr*Scale + mat3(1.0);
+    dr = dr*Scale + mat3(0.9);
 	}
-	vec3 jl = normalize(z);
-	vec3 normal = jl * dr;
-	float r = length(z)/length(normal);
+	float r = length(z)/Linfnorm(dr);
+	vec3 normal = normalize(z) * dr;
 	return dualVec(r,normalize(normal));
 }
 `
