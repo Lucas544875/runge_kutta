@@ -22,6 +22,7 @@ let keyS = new LongPress(83);
 let keyD = new LongPress(68);
 let keyK = new LongPress(75);
 let keyL = new LongPress(76);
+let recorder;
 
 // onload
 window.onload = function(){
@@ -38,6 +39,22 @@ window.onload = function(){
   cDir=Quatarnion.vec(0,-1,0);
   cPos=Quatarnion.vec(0,11,0);
 
+  //録画の設定
+  let rstart = document.getElementById('recStart');
+  let rstop = document.getElementById('recStop');
+  let stream = canvas.captureStream();
+  recorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'});
+  var anchor = document.getElementById('downloadlink');
+	//録画終了時に動画ファイルのダウンロードリンクを生成
+	recorder.ondataavailable = function(e) {
+    console.log("data-available");
+		var videoBlob = new Blob([e.data], { type: e.data.type });
+		blobUrl = window.URL.createObjectURL(videoBlob);
+		anchor.download = 'movie.webm';
+		anchor.href = blobUrl;
+		anchor.style.display = 'block';
+	}
+
   // イベントリスナー登録
   eCheck.addEventListener('change', checkChange, true);
   document.addEventListener("mousedown",mouseDown,true);
@@ -45,6 +62,8 @@ window.onload = function(){
   document.addEventListener("keydown",LongPress.keyDown,true);
   document.addEventListener("keyup",LongPress.keyUp,true);
   c.addEventListener('mousemove', mouseMove, true);
+  rstart.addEventListener('click',() => recorder.start());
+  rstop.addEventListener('click',() => recorder.stop());
 
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
