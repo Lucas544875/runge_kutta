@@ -35,8 +35,8 @@ window.onload = function(){
   c.width=cw;
 
   //視点の設定
-  cDir=Quatarnion.vec(-0.336,0.871,-0.363);
-  cPos=Quatarnion.vec(3.362,-8.716,3.637);
+  cDir=Quatarnion.vec(0,-1,0);
+  cPos=Quatarnion.vec(0,11,0);
 
   // イベントリスナー登録
   eCheck.addEventListener('change', checkChange, true);
@@ -100,18 +100,18 @@ function render(){
   }
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(0.003));
+    cPos = cPos.add(cDir.scale(0.001*cPos.norm));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-0.003));
+    cPos = cPos.add(cDir.scale(-0.001*cPos.norm));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.003));
+    cPos = cPos.add(xaxes.scale(-0.0005*cPos.norm));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.003));
+    cPos = cPos.add(xaxes.scale(0.0005*cPos.norm));
   }
 
 
