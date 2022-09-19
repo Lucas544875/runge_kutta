@@ -39,9 +39,6 @@ window.onload = function(){
   cPos=Quatarnion.vec(3.362,-8.716,3.637);
 
   // イベントリスナー登録
-  //document.addEventListener("keydown",key,true);
-  //w=87,a=65,s=83,d=68,z=90,x=88
-  //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
   eCheck.addEventListener('change', checkChange, true);
   document.addEventListener("mousedown",mouseDown,true);
   document.addEventListener("mouseup",mouseUp,true);
@@ -101,7 +98,7 @@ function render(){
   if (run === false) {
     return;
   }
-  //WASDによる操作
+  //WASDによる移動操作
   if(keyW.pressed){
     cPos = cPos.add(cDir.scale(0.003));
   }
@@ -261,10 +258,7 @@ function mouseMove(e){
     let dy =(0.7 * (e.offsetY-centory) / ch);
     centorx=e.offsetX;
     centory=e.offsetY;
-    //cMove(dx,dy);
     cRotate(dx,dy);
-    //console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
-    //console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
   };
 };
 
@@ -287,15 +281,4 @@ function cRotate(dx,dy) {
     rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
   }
   cDir=cDir.turn(roty.times(rotx));
-};
-
-function cMove(dx,dy) {
-  //todo:任意の点をピボットにできるようにする
-  let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
-  let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
-  let rotx = new Quatarnion(1,0,0,0);
-  if (cDir.k*Math.sign(dy) < maxpitch) {
-    rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
-  }
-  cPos=cPos.turn(roty.times(rotx));
 };
