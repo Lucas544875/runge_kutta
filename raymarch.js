@@ -20,6 +20,8 @@ let keyW = new LongPress(87);
 let keyA = new LongPress(65);
 let keyS = new LongPress(83);
 let keyD = new LongPress(68);
+let keyK = new LongPress(75);
+let keyL = new LongPress(76);
 
 // onload
 window.onload = function(){
@@ -99,9 +101,22 @@ function render(){
   if (run === false) {
     return;
   }
+  //WASDによる操作
   if(keyW.pressed){
     cPos = cPos.add(cDir.scale(0.003));
   }
+  if(keyS.pressed){
+    cPos = cPos.add(cDir.scale(-0.003));
+  }
+  if(keyA.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    cPos = cPos.add(xaxes.scale(-0.003));
+  }
+  if(keyD.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    cPos = cPos.add(xaxes.scale(0.003));
+  }
+
 
   window.requestAnimationFrame(render, c);
   // 時間管理
@@ -242,8 +257,8 @@ function mouseMove(e){
       mouseflag=false;
       return;
     };
-    let dx =(-2 * (e.offsetX-centorx) / cw);
-    let dy =(2 * (e.offsetY-centory) / ch);
+    let dx =(-0.7 * (e.offsetX-centorx) / cw);
+    let dy =(0.7 * (e.offsetY-centory) / ch);
     centorx=e.offsetX;
     centory=e.offsetY;
     //cMove(dx,dy);
