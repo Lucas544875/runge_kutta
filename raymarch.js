@@ -229,14 +229,14 @@ function mouseMove(e){
       mouseflag=false;
       return;
     };
-    let dx =(2 * (e.offsetX-centorx) / cw);
-    let dy =(-2 * (e.offsetY-centory) / ch);
+    let dx =(-2 * (e.offsetX-centorx) / cw);
+    let dy =(2 * (e.offsetY-centory) / ch);
     centorx=e.offsetX;
     centory=e.offsetY;
-    cMove(dx,dy);
+    //cMove(dx,dy);
     cRotate(dx,dy);
-    console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
-    console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
+    //console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
+    //console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
   };
 };
 
