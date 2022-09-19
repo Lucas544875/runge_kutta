@@ -5,7 +5,7 @@ class Quatarnion {
     this.j = j;
     this.k = k;
   };
-  
+
   add(q2){
     return new Quatarnion(
       this.w + q2.w,
@@ -68,6 +68,15 @@ class Quatarnion {
   
   tovec(){
     return [this.i,this.j,this.k];
+  }
+
+  get norm(){
+    return Math.sqrt(
+      this.w * this.w +
+      this.i * this.i +
+      this.j * this.j +
+      this.k * this.k 
+    )
   }
   //todo: lookat()
 }
