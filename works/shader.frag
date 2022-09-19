@@ -37,12 +37,13 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 const effectConfig effect = effectConfig(
-  false,false,false,false,false,false,true,true
+  true,true,true,true,true,false,true,true
 );
 
 const int SAIHATE = 0;
 const int CYAN = 1;
 const int WHITE = 2;
+const int GRID = 3;
 const int DEBUG = 98;
 const int ERROR = 99;
 
@@ -97,7 +98,7 @@ float distanceFunction(vec3 z){
 //マテリアルの設定
 int materialOf(vec3 z,float distance){
   if (floor1(z) == distance){
-    return CYAN;
+    return GRID;
   }else if (sphere1(z) == distance){
     return DEBUG;
   }else{
@@ -105,13 +106,18 @@ int materialOf(vec3 z,float distance){
   }
 }
 
+vec3 gridCol(vec3 rPos){
+  return mix(vec3(0.3),vec3(step(fract(2.0*rPos.x),0.05),step(fract(2.0*rPos.y),0.05),step(fract(2.0*rPos.z),0.05)),0.5);
+}
+
+
 vec3 debugCol(vec3 rPos){
   return fract(rPos);
 }
 
 vec3 color(rayobj ray){
-  if (ray.material == CYAN){
-    return vec3(0.0,1.0,1.0);
+  if (ray.material == GRID){
+    return gridCol(ray.rPos);
   }else if (ray.material == WHITE){
     return vec3(1.0,1.0,1.0);
   }else if (ray.material == DEBUG){
@@ -127,6 +133,8 @@ float refrectance(int material){
   }else if (material == WHITE){
     return 0.6;
   }else if (material == DEBUG){
+    return 0.3;
+  }else if (material == GRID){
     return 0.3;
   }else{
     return 0.0;
@@ -203,7 +211,7 @@ void growFunc(inout rayobj ray){//グロー
   ray.fragColor = clamp(ray.fragColor+0.1*grow,0.0,1.0);
 }
 
-const vec3 fogColor = vec3(243.0, 240.0, 215.0)/256.0;
+const vec3 fogColor = vec3(160.0,216.0,239.0)/256.0;
 void fogFunc(inout rayobj ray){//霧
   float fog = clamp((ray.len-10.0)/20.0,0.0,1.0);
   ray.fragColor = (ray.fragColor)*(1.0-fog)+fogColor*(fog);

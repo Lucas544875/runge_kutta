@@ -12,7 +12,13 @@ let attStride = [];
 let run = true;
 let cDir;
 let cPos;
-const maxpitch = Math.sin(5/12*Math.PI);
+let pendulumTop = [];
+let pendulum1 = [];
+let pendulum2 = [];
+let pendulum1v = [];
+let pendulum2v = [];
+let flamecount = 0;
+const maxpitch = Math.cos(1/12*Math.PI);
 
 // onload
 window.onload = function(){
@@ -26,8 +32,8 @@ window.onload = function(){
   c.width=cw;
 
   //視点の設定
-  cDir=Quatarnion.vec(-0.336,0.871,-0.363);
-  cPos=Quatarnion.vec(3.362,-8.716,3.637);
+  cDir=Quatarnion.vec(0.0,1.0,0.0);
+  cPos=Quatarnion.vec(0.0,-7.0,0.0);
 
   // イベントリスナー登録
   //document.addEventListener("keydown",key,true);
@@ -50,6 +56,9 @@ window.onload = function(){
   uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
   uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
   uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
+  uniLocation[5] = gl.getUniformLocation(prg, 'pendulumTop');
+  uniLocation[6] = gl.getUniformLocation(prg, 'pendulum1');
+  uniLocation[7] = gl.getUniformLocation(prg, 'pendulum2');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -94,6 +103,10 @@ function render(){
   // 時間管理
   timenow = new Date().getTime();
   
+  //振り子の座標更新
+  rungekutta(flamecount);
+  flamecount++;
+
   // カラーバッファをクリア
   gl.clear(gl.COLOR_BUFFER_BIT);
   
@@ -103,6 +116,9 @@ function render(){
   gl.uniform2fv(uniLocation[2], [cw, ch]);
   gl.uniform3fv(uniLocation[3], cDir.tovec());
   gl.uniform3fv(uniLocation[4], cPos.tovec());
+  gl.uniform3fv(uniLocation[5], pendulumTop);
+  gl.uniform3fv(uniLocation[6], pendulum1);
+  gl.uniform3fv(uniLocation[7], pendulum2);
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -213,7 +229,6 @@ function create_ibo(data){
 //check box チェックされている間だけレンダリング
 function checkChange(e) {
   run = e.currentTarget.checked;
-  console.log(run);
   if(run){
     startTimeary[0] = new Date().getTime();
     render();
@@ -235,8 +250,6 @@ function mouseMove(e){
     centory=e.offsetY;
     cMove(dx,dy);
     cRotate(dx,dy);
-    console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
-    console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
   };
 };
 
@@ -317,3 +330,164 @@ function key(e){
   } 
 }
 */
+
+////////////////////////////////////////////////////////////////////
+// 物理パラメータ
+////////////////////////////////////////////////////////////////////
+//ひもの長さ
+let L01 = 1;
+let L12 = 1;
+//支点の高さ
+let z_box = 1;
+//重力加速度
+let g = 9.8;
+//質量
+let m1 = 1;
+let m2 = 1;
+
+//初速度
+let v1 = 0;
+let v2 = 10;
+
+//補正パラメータ
+let compensationK = 0.02; //補正ばね弾性係数
+let compensationGamma = 1.0; //補正粘性抵抗係数
+let compensationFactor = 1/10; //補正倍率因子
+
+////////////////////////////////////////////////////////////////////
+// 解析解
+////////////////////////////////////////////////////////////////////
+//支点の位置ベクトル・速度ベクトル・加速度ベクトル
+let r_box = new Vector3( 0, 0, z_box );
+let v_box = new Vector3( 0, 0, 0 );
+let a_box = new Vector3( 0, 0, 0 );
+//重力加速度ベクトル
+let vec_g = new Vector3( 0, 0, -g );
+
+//連立方程式の左辺
+function A( rs, vs, i, j ){
+  //相対位置ベクトル
+  let ri = ( i>0 )? rs[ i-1 ] : r_box;
+  let rj = ( j>0 )? rs[ j-1 ] : r_box;
+  let rij = new Vector3().subVectors( ri, rj );
+
+  //相対速度ベクトル
+  let vi = ( i>0 )? vs[ i-1 ] : v_box;
+  let vj = ( j>0 )? vs[ j-1 ] : v_box;
+  let vij = new Vector3().subVectors( vi, vj );
+
+  //相対加速度ベクトル
+  let ai = ( i>0 )? vec_g : a_box;
+  let aj = ( j>0 )? vec_g : a_box;
+  let aij = new Vector3().subVectors( ai, aj );
+
+  let L = ( i == 0 )? L01 : L12;
+
+  return ( - vij.lengthSq() - aij.dot( rij ) ) / L;
+}
+//f_{01}を計算
+function f01( rs, vs, cos ){
+
+  let bunbo = m1 + m2 * ( 1 - cos*cos );
+  return -m1 * ( m1 + m2 ) / bunbo * A( rs, vs, 0, 1 ) - m1  * m2 * cos / bunbo * A( rs, vs, 1, 2 ) ;
+
+}
+//f_{12}を計算
+function f12( rs, vs, cos ){
+
+  let bunbo = m1 + m2 * ( 1 - cos*cos );
+  return -m1 * m2 * cos  / bunbo * A( rs, vs, 0, 1 ) - m1 * m2 / bunbo * A( rs, vs, 1, 2 ) ;
+
+}
+
+////////////////////////////////////////////////////////////////////
+// ルンゲ・クッタ法による数値計算用
+////////////////////////////////////////////////////////////////////
+let dt = 0.01;
+//加速度ベクトル
+RK4.A = function( t, rs, vs ){
+  let N = rs.length;
+  let outputs = [];
+
+  //方向ベクトル
+  let n01 = new Vector3().subVectors( r_box, rs[ 0 ] ).normalize();
+  let n12 = new Vector3().subVectors( rs[ 0 ], rs[ 1 ] ).normalize();
+  //なす角の余弦
+  let cos = n01.dot( n12 );
+
+  //振子１へ加わる加速度
+  outputs[ 0 ] = vec_g.clone();
+  outputs[ 0 ].add(
+    n01.clone().multiplyScalar( f01( rs, vs, cos ) / m1 )
+  ).add(
+    n12.clone().multiplyScalar( -f12( rs, vs, cos ) / m1 )
+  );
+  //振子２へ加わる加速度
+  outputs[ 1 ] = vec_g.clone();
+  outputs[ 1 ].add(
+    n12.clone().multiplyScalar( f12( rs, vs, cos ) / m2 )
+  );
+
+////////////////ひもの長さ補正力の計算//////////////////
+  //現時点の長さ
+  let _L01 = new Vector3().subVectors( r_box, rs[ 0 ] ).length();
+  let _L12 = new Vector3().subVectors( rs[ 0 ], rs[ 1 ] ).length();
+  //補正倍率
+  let retio = ( outputs[ 0 ].length() + outputs[ 1 ].length() ) * compensationFactor;
+  //補正ばね弾性力
+  let fk01 = n01.clone().multiplyScalar( -( _L01 - L01 ) * compensationK * retio );
+  let fk10 = fk01.clone().multiplyScalar( -1 );
+  let fk12 = n12.clone().multiplyScalar( -( _L12 - L12 ) * compensationK * retio );
+  let fk21 = fk12.clone().multiplyScalar( -1 );
+
+  let v01 = new Vector3().subVectors( v_box,   vs[ 0 ] );
+  let v12 = new Vector3().subVectors( vs[ 0 ], vs[ 1 ] );
+  //補正粘性抵抗力
+  let fgamma01 = n01.clone().multiplyScalar( compensationGamma * v01.dot( n01 ) * retio );
+  let fgamma10 = fgamma01.clone().multiplyScalar( -1 );
+  let fgamma12 = n12.clone().multiplyScalar( compensationGamma * v12.dot( n12 ) * retio );
+  let fgamma21 = fgamma12.clone().multiplyScalar( -1 );
+
+  //ひもの長さ補正力を加える
+  outputs[ 0 ].add( fk01 ).add( fk21 ).add( fgamma01 ).add( fgamma21 );
+  outputs[ 1 ].add( fk12 ).add( fgamma12 );
+///////////////////////////////////////////////////
+
+  return outputs;
+}
+
+
+///////////////////////////////////////////////////
+// ルンゲ・クッタ法による数値計算
+///////////////////////////////////////////////////
+let rs = [];
+let vs = [];
+
+pendulumTop = [0, 0, z_box];
+pendulum1 = [0, 0, z_box - L01];
+pendulum2 = [0, 0, z_box - L01 - L12];
+pendulum1v = [ v1, 0, 0];
+pendulum2v = [ v2, 0, 0];
+
+//初期値
+rs[ 0 ] = new Vector3( 0, 0, z_box-L01 );
+vs[ 0 ] = new Vector3( 0, 0, 0 );
+rs[ 1 ] = new Vector3( 0, 0, z_box-L01-L12 );
+vs[ 1 ] = new Vector3( v2, 0, 0 );
+
+//振り子の座標更新
+function rungekutta(flamecount) {
+  let t = dt * flamecount;
+  let results = RK4( dt, t, rs, vs );
+
+  for( let j = 0; j < results.rs.length ; j++ ){
+
+    rs[ j ].add( results.rs[ j ] );
+    vs[ j ].add( results.vs[ j ] );
+  }
+
+  pendulum1[0] = rs[ 0 ].x
+  pendulum1[2] = rs[ 0 ].z
+  pendulum2[0] = rs[ 1 ].x
+  pendulum2[2] = rs[ 1 ].z
+}

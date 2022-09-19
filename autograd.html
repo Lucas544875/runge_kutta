@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html><head>
+<script id="fs_main" class="x-shader/x-fragment" src="main.frag" type="text/javascript"></script>
+<script id="fs_quaternion" class="x-shader/x-fragment" src="quaternion.frag" type="text/javascript"></script>
+<script id="fs_distanceFunction" class="x-shader/x-fragment" src="distanceFunction.frag" type="text/javascript"></script>
+<script id="fs_material" class="x-shader/x-fragment" src="material.frag" type="text/javascript"></script>
+<script id="fs_lighting" class="x-shader/x-fragment" src="lighting.frag" type="text/javascript"></script>
+<script id="fs" class="x-shader/x-fragment" src="shaderBuilder.js" type="text/javascript"></script>
+
+<script id="vs" class="x-shader/x-vertex" src="shader.vert" type="text/javascript"></script>
+
+<link href="style.css" rel="stylesheet">
+
+<script src="quaternion.js" type="text/javascript"></script>
+
+<script src="longPress.js" type="text/javascript"></script>
+
+<script src="raymarch.js" type="text/javascript"></script>
+
+<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <p><input type="checkbox" id="check" checked><label for="check"> auto run</label></p>
+</body>
+</html>
