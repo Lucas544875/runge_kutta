@@ -22,88 +22,54 @@ dualVec floor1(vec3 z){//plane
   return plane(z,vec3(0.0,0.0,1.0),1.0);
 }
 
-mat3 diag(vec3 v){
-	return mat3(
-		v.x, 0.0, 0.0,
-		0.0, v.y, 0.0,
-		0.0, 0.0, v.z
-	);
-}
-
-float trace(mat3 m){
-	return m[0][0] + m[1][1] + m[2][2];
-}
-mat3 transpose(mat3 m){
-	return mat3 (
-		m[0][0], m[0][1], m[0][2],
-		m[1][0], m[1][1], m[1][2],
-		m[2][0], m[2][1], m[2][2]
-	);
-}
-
-float Fnorm(mat3 m){
-	return sqrt(trace(m * transpose(m)));
-}
-float L1norm(vec3 v){
-	return abs(v.x)+abs(v.y)+abs(v.z);
-}
-float L1norm(mat3 m){
-	return max(max(L1norm(m[0]),L1norm(m[1])),L1norm(m[2]));
-}
-float Linfnorm(mat3 m){
-	return L1norm(transpose(m));
-}
-
-void sphereFold(inout vec3 z, inout mat3 dz) {
-  float minRadius2 = 0.60;//定数
-  float fixedRadius2 = 2.65;//定数
+void sphereFold(inout vec3 z, inout float dz) {
+  float minRadius2=0.60;//定数
+  float fixedRadius2=2.65;//定数
 	float r2 = dot(z,z);
-	if (r2 < minRadius2) {
+	if (r2<minRadius2) { 
 		// linear inner scaling
 		float temp = fixedRadius2/(minRadius2);
-		z  *= temp;
-		dz *= temp;
-	} else if (r2 < fixedRadius2) { 
-		// this is the actual sphere inversion
-		float temp = fixedRadius2/r2;
-		mat3 jacobi = mat3 (//column-major order
-			r2-2.0*z.x*z.x, -2.0*z.y*z.x, -2.0*z.z*z.x,
-			-2.0*z.x*z.y, r2-2.0*z.y*z.y, -2.0*z.z*z.y,
-			-2.0*z.x*z.z, -2.0*z.y*z.z, r2-2.0*z.z*z.z
-			);
-		jacobi *= temp/r2;
-		dz = jacobi*dz;
 		z *= temp;
+		dz*= temp;
+	} else if (r2<fixedRadius2) { 
+		// this is the actual sphere inversion
+		float temp =fixedRadius2/r2;
+		z *= temp;
+		dz*= temp;
 	}
 }
 
-void boxFold(inout vec3 z, inout mat3 dz) {
+void boxFold(inout vec3 z, inout float dz) {
   float foldingLimit=1.14;//定数
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
-	mat3 jacobi = diag(sign(abs(z)-foldingLimit));
-	dz = jacobi*dz;
 }
 
-dualVec mandelBox(vec3 z){
-  float Scale = -2.18;//+time/20.0;//定数
+float _mandelBox(vec3 z){
+  float Scale = -2.18 ;//+time/20.0;//定数
 	vec3 offset = z;
-	mat3 dr = mat3(1.0);
+	float dr = 1.0;
 	for (int n = 0; n < 10; n++) {
 		boxFold(z,dr);       // Reflect
 		sphereFold(z,dr);    // Sphere Inversion
-    z  = Scale*z + offset;  // Scale & Translate
-    dr = Scale*dr + mat3(1.0);
+    z=Scale*z + offset;  // Scale & Translate
+    dr = dr*abs(Scale)+1.0;
 	}
-	float r = length(z)/L1norm(dr);
-	r = min(r,0.3);//なぜか動く
-	vec3 normal;
-	if (L1norm(dr) == L1norm(dr[0])){
-		normal = normalize(-dr[0]);
-	}else if(L1norm(dr) == L1norm(dr[1])){
-		normal = normalize(-dr[1]);
-	}else{
-		normal = normalize(-dr[2]);
-	}
-	return dualVec(r,normal);
+	float r = length(z);
+	return r/abs(dr);
+}
+
+vec3 normal(vec3 p){
+  float d = 0.0001;
+  return normalize(vec3(
+    _mandelBox(p + vec3(  d, 0.0, 0.0)) - _mandelBox(p + vec3( -d, 0.0, 0.0)),
+    _mandelBox(p + vec3(0.0,   d, 0.0)) - _mandelBox(p + vec3(0.0,  -d, 0.0)),
+    _mandelBox(p + vec3(0.0, 0.0,   d)) - _mandelBox(p + vec3(0.0, 0.0,  -d))
+  ));
+}
+
+dualVec mandelBox(vec3 z){
+	float d = _mandelBox(z);
+	vec3 e = normal(z);
+	return dualVec(d,e);
 }
 `

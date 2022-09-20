@@ -37,6 +37,7 @@ void specularFunc(inout rayobj ray){//鏡面反射
   float specular=1.0/(50.0*(1.001-clamp(x,0.0,1.0)));
   ray.fragColor = clamp(ray.fragColor+specular,0.0,1.0);
 }
+
 vec3 Hadamard(vec3 v,vec3 w){
   return vec3(
     v.x * w.x,
@@ -48,7 +49,7 @@ vec3 Hadamard(vec3 v,vec3 w){
 void diffuseFunc(inout rayobj ray){//拡散光
   vec3 color = color(ray);
   vec3 lightColor = vec3(1.0,0.8,0.5);
-  float diffIntensity = 0.5;
+  float diffIntensity = 1.0;
   float diffuse = max(0.0,dot(LightDir, ray.normal));
   ray.fragColor += diffIntensity * diffuse * Hadamard(color,lightColor);
 }

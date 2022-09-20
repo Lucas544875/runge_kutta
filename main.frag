@@ -10,7 +10,7 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
+const vec3 LightDir = normalize(vec3(0.0,1.0,0.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
