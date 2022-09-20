@@ -23,6 +23,13 @@ void raymarch(inout rayobj ray){
 }
 
 //ライティング
+void ambientFunc(inout rayobj ray){//アンビエント
+  vec3 color = color(ray);
+  vec3 ambcolor = vec3(0.2,0.4,0.8);
+  float ambIntensity = 0.3;
+  ray.fragColor += ambIntensity * dot(color,ambcolor);
+}
+
 void specularFunc(inout rayobj ray){//鏡面反射
   float t = -dot(ray.direction,ray.normal);
   vec3 reflection=ray.direction+2.0*t*ray.normal;
@@ -30,9 +37,20 @@ void specularFunc(inout rayobj ray){//鏡面反射
   float specular=1.0/(50.0*(1.001-clamp(x,0.0,1.0)));
   ray.fragColor = clamp(ray.fragColor+specular,0.0,1.0);
 }
+vec3 Hadamard(vec3 v,vec3 w){
+  return vec3(
+    v.x * w.x,
+    v.y * w.y,
+    v.z * w.z
+  );
+}
 
 void diffuseFunc(inout rayobj ray){//拡散光
-  ray.fragColor *= mix(0.8,1.0,dot(LightDir, ray.normal));
+  vec3 color = color(ray);
+  vec3 lightColor = vec3(1.0,0.8,0.5);
+  float diffIntensity = 0.5;
+  float diffuse = max(0.0,dot(LightDir, ray.normal));
+  ray.fragColor += diffIntensity * diffuse * Hadamard(color,lightColor);
 }
 
 const float shadowCoef = 0.4;

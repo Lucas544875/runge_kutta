@@ -119,10 +119,10 @@ function render(){
   }
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(0.001*cPos.norm));
+    cPos = cPos.add(cDir.scale(0.01*cPos.norm));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-0.001*cPos.norm));
+    cPos = cPos.add(cDir.scale(-0.01*cPos.norm));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));

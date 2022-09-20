@@ -28,6 +28,7 @@ struct rayobj{
 
 struct effectConfig{
   bool reflect;    //反射
+  bool ambient;    //アンビエント
   bool specular;   //ハイライト(鏡面反射)
   bool diffuse;    //拡散光
   bool shadow;     //ソフトシャドウ
@@ -44,6 +45,7 @@ struct dualVec{ //三次元の二重数
 
 const effectConfig effect = effectConfig(
   false, //反射
+  true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //ソフトシャドウ
@@ -75,11 +77,14 @@ void main(void){
   raymarch(ray);
 
   //エフェクト
-  ray.fragColor = color(ray);
+  ray.fragColor = vec3(0.0,0.0,0.0);
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
 
     if (effect.reflect){
       reflectFunc(ray);
+    }
+    if(effect.ambient){
+      ambientFunc(ray);
     }
     if (effect.specular){
       specularFunc(ray);

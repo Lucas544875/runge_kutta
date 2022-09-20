@@ -16,7 +16,7 @@ int materialOf(vec3 z,float distance){
   }else if (sphere1(z).d == distance){
     return DEBUG;
   }else if (mandelBox(z).d == distance){
-    return MANDEL;
+    return WHITE;
   }else{
     return ERROR;
   }
