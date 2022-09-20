@@ -20,8 +20,8 @@ let keyW = new LongPress(87);
 let keyA = new LongPress(65);
 let keyS = new LongPress(83);
 let keyD = new LongPress(68);
-let keyK = new LongPress(75);
-let keyL = new LongPress(76);
+let keyQ = new LongPress(81);
+let keyE = new LongPress(69);
 let recorder;
 
 // onload
@@ -132,7 +132,16 @@ function render(){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     cPos = cPos.add(xaxes.scale(0.0005*cPos.norm));
   }
-
+  if(keyQ.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    let yaxes=xaxes.cross(cDir);
+    cPos = cPos.add(yaxes.scale(0.0005*cPos.norm));
+  }
+  if(keyE.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    let yaxes=xaxes.cross(cDir);
+    cPos = cPos.add(yaxes.scale(-0.0005*cPos.norm));
+  }
 
   window.requestAnimationFrame(render, c);
   // 時間管理
