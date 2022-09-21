@@ -126,21 +126,21 @@ function render(){
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.0005*cPos.norm));
+    cPos = cPos.add(xaxes.scale(-0.001*cPos.norm));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.0005*cPos.norm));
+    cPos = cPos.add(xaxes.scale(0.001*cPos.norm));
   }
   if(keyQ.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(0.0005*cPos.norm));
+    cPos = cPos.add(yaxes.scale(0.001*cPos.norm));
   }
   if(keyE.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(-0.0005*cPos.norm));
+    cPos = cPos.add(yaxes.scale(-0.001*cPos.norm));
   }
 
   window.requestAnimationFrame(render, c);

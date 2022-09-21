@@ -31,6 +31,7 @@ struct effectConfig{
   bool ambient;    //アンビエント
   bool specular;   //ハイライト(鏡面反射)
   bool diffuse;    //拡散光
+  bool incandescence;//白熱光
   bool shadow;     //ソフトシャドウ
   bool globallight;//大域照明
   bool grow;       //グロー
@@ -48,6 +49,7 @@ const effectConfig effect = effectConfig(
   true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
+  true,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
@@ -91,6 +93,9 @@ void main(void){
     }
     if (effect.diffuse){
       diffuseFunc(ray);
+    }
+    if (effect.incandescence){
+      incandescenceFunc(ray);
     }
     if (effect.shadow){
       shadowFunc(ray);

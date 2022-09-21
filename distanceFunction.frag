@@ -48,7 +48,7 @@ float _mandelBox(vec3 z){
   float Scale = -2.18 ;//+time/20.0;//定数
 	vec3 offset = z;
 	float dr = 1.0;
-	for (int n = 0; n < 10; n++) {
+	for (int n = 0; n < 16; n++) {
 		boxFold(z,dr);       // Reflect
 		sphereFold(z,dr);    // Sphere Inversion
     z=Scale*z + offset;  // Scale & Translate
