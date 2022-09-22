@@ -40,12 +40,12 @@ void sphereFold(inout vec3 z, inout float dz) {
 }
 
 void boxFold(inout vec3 z, inout float dz) {
-  float foldingLimit=1.14;//定数
+  float foldingLimit=0.6;//time/100.0;//定数
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
 }
 
 float _mandelBox(vec3 z){
-  float Scale = -2.18 ;//+time/20.0;//定数
+  float Scale = 1.9;//+time/20.0 ;//定数
 	vec3 offset = z;
 	float dr = 1.0;
 	for (int n = 0; n < 16; n++) {
@@ -71,5 +71,51 @@ dualVec mandelBox(vec3 z){
 	float d = _mandelBox(z);
 	vec3 e = normal(z);
 	return dualVec(d,e);
+}
+
+float sdCross(vec3 p, float c) {
+	p = abs(p);
+	float dxy = max(p.x, p.y);
+	float dyz = max(p.y, p.z);
+	float dxz = max(p.x, p.z);
+	return min(dxy, min(dyz, dxz)) - c;
+}
+
+float sdBox(vec3 p, vec3 b) {
+	p = abs(p) - b;
+	return length(max(p, 0.0)) + min(max(p.x, max(p.y, p.z)), 0.0);
+}
+
+float mengerSponge1(vec3 p, float scale, float width) {
+	float d = sdBox(p, vec3(1.0));
+	float s = 1.0;
+	for (int i = 0; i < 5; i++) {
+		vec3 a = mod(p * s, 2.0) - 1.0;
+		s *= scale;
+		vec3 r = 1.0 - scale * abs(a);
+		float c = sdCross(r, width) / s;
+		d = max(d, c);
+	}
+	return d;
+}
+
+float dePseudoKleinian(vec3 p) {
+	vec3 csize = vec3(0.90756, 0.92436, 0.90756);
+	float size = 1.0;
+	vec3 c = vec3(0.0);
+	float defactor = 1.0;
+	vec3 offset = vec3(0.0);
+	vec3 ap = p + 1.0;
+	for (int i = 0; i < ITERATIONS; i++) {
+		ap = p;
+		p = 2.0 * clamp(p, -csize, csize) - p;
+		float r2 = dot(p, p);
+		float k = max(size / r2, 1.0);
+		p *= k;
+		defactor *= k;
+		p += c;
+	}
+	float r = abs(0.5 * abs(p.y - offset.y) / defactor);
+	return r;
 }
 `
