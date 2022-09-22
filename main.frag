@@ -10,7 +10,7 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(1.0,-0.8,0.3));
+const vec3 LightDir = normalize(vec3(0.0,2.0,1.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -28,8 +28,10 @@ struct rayobj{
 
 struct effectConfig{
   bool reflect;    //反射
+  bool ambient;    //アンビエント
   bool specular;   //ハイライト(鏡面反射)
   bool diffuse;    //拡散光
+  bool incandescence;//白熱光
   bool shadow;     //ソフトシャドウ
   bool globallight;//大域照明
   bool grow;       //グロー
@@ -44,8 +46,10 @@ struct dualVec{ //三次元の二重数
 
 const effectConfig effect = effectConfig(
   false, //反射
+  true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
+  true,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
@@ -75,17 +79,23 @@ void main(void){
   raymarch(ray);
 
   //エフェクト
-  ray.fragColor = color(ray);
+  ray.fragColor = vec3(0.0,0.0,0.0);
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
 
     if (effect.reflect){
       reflectFunc(ray);
+    }
+    if(effect.ambient){
+      ambientFunc(ray);
     }
     if (effect.specular){
       specularFunc(ray);
     }
     if (effect.diffuse){
       diffuseFunc(ray);
+    }
+    if (effect.incandescence){
+      incandescenceFunc(ray);
     }
     if (effect.shadow){
       shadowFunc(ray);

@@ -13,6 +13,16 @@ let run = true;
 let cDir;
 let cPos;
 const maxpitch = Math.sin(5/12*Math.PI);
+//key
+//w=87,a=65,s=83,d=68,z=90,x=88
+//u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
+let keyW = new LongPress(87);
+let keyA = new LongPress(65);
+let keyS = new LongPress(83);
+let keyD = new LongPress(68);
+let keyQ = new LongPress(81);
+let keyE = new LongPress(69);
+let recorder;
 
 // onload
 window.onload = function(){
@@ -26,17 +36,34 @@ window.onload = function(){
   c.width=cw;
 
   //視点の設定
-  cDir=Quatarnion.vec(-0.336,0.871,-0.363);
-  cPos=Quatarnion.vec(3.362,-8.716,3.637);
+  cDir=Quatarnion.vec(0,-1,0);
+  cPos=Quatarnion.vec(0,11,0);
+
+  //録画の設定
+  let rstart = document.getElementById('recStart');
+  let rstop = document.getElementById('recStop');
+  let stream = canvas.captureStream();
+  recorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'});
+  var anchor = document.getElementById('downloadlink');
+	//録画終了時に動画ファイルのダウンロードリンクを生成
+	recorder.ondataavailable = function(e) {
+    console.log("data-available");
+		var videoBlob = new Blob([e.data], { type: e.data.type });
+		blobUrl = window.URL.createObjectURL(videoBlob);
+		anchor.download = 'movie.webm';
+		anchor.href = blobUrl;
+		anchor.style.display = 'block';
+	}
 
   // イベントリスナー登録
-  //document.addEventListener("keydown",key,true);
-  //w=87,a=65,s=83,d=68,z=90,x=88
-  //u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
   eCheck.addEventListener('change', checkChange, true);
   document.addEventListener("mousedown",mouseDown,true);
   document.addEventListener("mouseup",mouseUp,true);
+  document.addEventListener("keydown",LongPress.keyDown,true);
+  document.addEventListener("keyup",LongPress.keyUp,true);
   c.addEventListener('mousemove', mouseMove, true);
+  rstart.addEventListener('click',() => recorder.start());
+  rstop.addEventListener('click',() => recorder.stop());
 
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
@@ -90,6 +117,32 @@ function render(){
   if (run === false) {
     return;
   }
+  //WASDによる移動操作
+  if(keyW.pressed){
+    cPos = cPos.add(cDir.scale(0.005*cPos.norm));
+  }
+  if(keyS.pressed){
+    cPos = cPos.add(cDir.scale(-0.005*cPos.norm));
+  }
+  if(keyA.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    cPos = cPos.add(xaxes.scale(-0.001*cPos.norm));
+  }
+  if(keyD.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    cPos = cPos.add(xaxes.scale(0.001*cPos.norm));
+  }
+  if(keyQ.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    let yaxes=xaxes.cross(cDir);
+    cPos = cPos.add(yaxes.scale(0.001*cPos.norm));
+  }
+  if(keyE.pressed){
+    let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
+    let yaxes=xaxes.cross(cDir);
+    cPos = cPos.add(yaxes.scale(-0.001*cPos.norm));
+  }
+
   window.requestAnimationFrame(render, c);
   // 時間管理
   timenow = new Date().getTime();
@@ -229,14 +282,11 @@ function mouseMove(e){
       mouseflag=false;
       return;
     };
-    let dx =(2 * (e.offsetX-centorx) / cw);
-    let dy =(-2 * (e.offsetY-centory) / ch);
+    let dx =(-0.7 * (e.offsetX-centorx) / cw);
+    let dy =(0.7 * (e.offsetY-centory) / ch);
     centorx=e.offsetX;
     centory=e.offsetY;
-    cMove(dx,dy);
     cRotate(dx,dy);
-    console.log('cPos=['+cPos.i+','+cPos.j+','+cPos.k+']');
-    console.log('cDir=['+cDir.i+','+cDir.j+','+cDir.k+']');
   };
 };
 
@@ -260,60 +310,3 @@ function cRotate(dx,dy) {
   }
   cDir=cDir.turn(roty.times(rotx));
 };
-
-function cMove(dx,dy) {
-  //todo:任意の点をピボットにできるようにする
-  let roty=Quatarnion.rotation(-dx*Math.PI,0,0,1);
-  let xaxes=cDir.cross(Quatarnion.vec(0,0,1)).tovec();
-  let rotx = new Quatarnion(1,0,0,0);
-  if (cDir.k*Math.sign(dy) < maxpitch) {
-    rotx=Quatarnion.rotation(dy*Math.PI,xaxes[0],xaxes[1],xaxes[2]);
-  }
-  cPos=cPos.turn(roty.times(rotx));
-};
-
-//key
-//w=87,a=65,s=83,d=68,z=90,x=88
-//u=85,h=72,j=74,k=75,n=78,m=77,o=79,p=80
-/*
-function key(e){
-  return;
-  if (e.keyCode==87){// w
-    keyary[2]+=0.1*diff;
-  }else if(e.keyCode==83){// s
-    keyary[2]-=0.1*diff;
-  }else if(e.keyCode==65){// a
-    keyary[0]-=0.1*diff;
-  }else if(e.keyCode==68){// d
-    keyary[0]+=0.1*diff;
-  }else if(e.keyCode==90){// z
-    keyary[1]+=0.1*diff;
-  }else if(e.keyCode==88){// x
-    keyary[1]-=0.1*diff;
-  }else if(e.keyCode==85){// u
-    keyary[3]-=0.1;
-  }else if(e.keyCode==74){// j
-    keyary[3]+=0.1;
-  }else if(e.keyCode==72){// h
-    keyary[5]-=0.1;
-  }else if(e.keyCode==75){// k
-    keyary[5]+=0.1;
-  }else if(e.keyCode==78){// n
-    keyary[4]-=0.2;
-  }else if(e.keyCode==77){// m
-    keyary[4]+=0.2;
-  }else if(e.keyCode==79){// o
-    keyary[7]*=1.05;
-  }else if(e.keyCode==80){// p
-    keyary[7]/=1.05;
-  }else if(e.keyCode==188){// <
-    diff/=2.0;
-  }else if(e.keyCode==190){// >
-    diff*=2.0;
-  }else if(e.keyCode==191){// /
-    keyary[6]-=0.01*diff;
-  }else if(e.keyCode==226){// \
-    keyary[6]+=0.01*diff;
-  } 
-}
-*/
