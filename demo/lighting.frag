@@ -3,12 +3,11 @@ let fs_lighting =`
 
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
-    dualVec dual = distanceFunction(ray.rPos);
-    ray.distance = dual.d;
-    ray.normal = dual.e;
+    ray.distance = distanceFunction(ray.rPos);
     ray.mindist = min(ray.mindist,ray.distance);
     ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
+      ray.normal = normal(ray.rPos);
       ray.material = materialOf(ray.rPos,ray.distance);
       return;
     }
@@ -26,7 +25,7 @@ void raymarch(inout rayobj ray){
 void ambientFunc(inout rayobj ray){//アンビエント
   vec3 color = color(ray);
   vec3 ambcolor = vec3(1.0);
-  float ambIntensity =  0.3;
+  float ambIntensity =  0.2;
   ray.fragColor += ambIntensity * dot(color,ambcolor);
   ray.fragColor = clamp(ray.fragColor,0.0,1.0);
 }
@@ -49,8 +48,8 @@ vec3 Hadamard(vec3 v,vec3 w){
 
 void diffuseFunc(inout rayobj ray){//拡散光
   vec3 color = color(ray);
-  vec3 lightColor = vec3(1.000, 0.831, 0.611);//(0.741, 0.741, 0.717);
-  float diffIntensity = 1.0;
+  vec3 lightColor = vec3(1.0);//(0.741, 0.741, 0.717);
+  float diffIntensity = 0.4;
   float diffuse = max(0.0,dot(LightDir, ray.normal));
   ray.fragColor += diffIntensity * diffuse * Hadamard(color,lightColor);
   ray.fragColor = clamp(ray.fragColor,0.0,1.0);

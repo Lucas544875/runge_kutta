@@ -6,21 +6,35 @@ const int WHITE = 2;
 const int GRID = 3;
 const int MANDEL = 4;
 const int BROWN = 5;
+const int NORMAL = 6;
 const int LESSSTEP = 97;
 const int DEBUG = 98;
 const int ERROR = 99;
 
 //マテリアルの設定
 int materialOf(vec3 z,float distance){
-  if (floor1(z).d == distance){
+  if (floor1(z) == distance){
     return GRID;
-  }else if (sphere1(z).d == distance){
+  }else if (sphere1(z) == distance){
     return DEBUG;
-  }else if (mandelBox(z).d == distance){
-    return BROWN;
+  }else if (mandelBox(z) == distance){
+    return WHITE;
+  }else if (mengerSponge(z) == distance){
+    return WHITE;
+  }else if (pseudoKleinian(z) == distance){
+    return WHITE;
   }else{
     return ERROR;
   }
+}
+
+vec3 normal(vec3 p){
+  float d = 0.0001;
+  return normalize(vec3(
+    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
+    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
+    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
+  ));
 }
 
 vec3 hsv(float h, float s, float v) {
@@ -45,9 +59,11 @@ float chebyshev (vec3 p,vec3 q){
 }
 
 vec3 kadoCol(vec3 rPos){
-  float d = chebyshev(rPos,vec3(0.0));
-  vec3 color = hsv(1.8*PI+d/5.0,1.0,1.0)*0.15 + vec3(0.85);
-  return color;
+  return normal(rPos)*0.66 + vec3(0.33);
+}
+
+vec3 normalCol(vec3 rPos){
+  return abs(normal(rPos));
 }
 
 vec3 color(rayobj ray){
@@ -63,6 +79,8 @@ vec3 color(rayobj ray){
     return vec3(0.9);
   }else if (ray.material == BROWN){
     return vec3(0.454, 0.301, 0.211);
+  }else if (ray.material == NORMAL){
+    return normalCol(ray.rPos);
   }else{
     return vec3(1.0,0.0,0.0);
   }

@@ -1,24 +1,20 @@
 let fs_distanceFunction =`
 
 //primitives
-dualVec sphere(vec3 z,vec3 center,float radius){
-	float d = length(z-center)-radius;
-	vec3 normal = normalize(z-center);
-  return dualVec(d,normal);
+float sphere(vec3 z,vec3 center,float radius){
+  return length(z-center)-radius;
 }
 
-dualVec sphere1(vec3 z){
+float sphere1(vec3 z){
   vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
   return sphere(p, vec3(1.5,1.5,0.0), 0.8);
 }
 
-dualVec plane(vec3 z,vec3 normal,float offset){
-	float d = dot(z,normalize(normal)) + offset;
-	vec3 e = normalize(normal);
-  return dualVec(d,e);
+float plane(vec3 z,vec3 normal,float offset){
+	return dot(z,normalize(normal)) + offset;
 }
 
-dualVec floor1(vec3 z){//plane
+float floor1(vec3 z){//plane
   return plane(z,vec3(0.0,0.0,1.0),1.0);
 }
 
@@ -44,7 +40,7 @@ void boxFold(inout vec3 z, inout float dz) {
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
 }
 
-float _mandelBox(vec3 z){
+float mandelBox(vec3 z){
   float Scale = 1.9;//+time/20.0 ;//定数
 	vec3 offset = z;
 	float dr = 1.0;
@@ -56,21 +52,6 @@ float _mandelBox(vec3 z){
 	}
 	float r = length(z);
 	return r/abs(dr);
-}
-
-vec3 normal(vec3 p){
-  float d = 0.0001;
-  return normalize(vec3(
-    _mandelBox(p + vec3(  d, 0.0, 0.0)) - _mandelBox(p + vec3( -d, 0.0, 0.0)),
-    _mandelBox(p + vec3(0.0,   d, 0.0)) - _mandelBox(p + vec3(0.0,  -d, 0.0)),
-    _mandelBox(p + vec3(0.0, 0.0,   d)) - _mandelBox(p + vec3(0.0, 0.0,  -d))
-  ));
-}
-
-dualVec mandelBox(vec3 z){
-	float d = _mandelBox(z);
-	vec3 e = normal(z);
-	return dualVec(d,e);
 }
 
 float sdCross(vec3 p, float c) {
@@ -86,10 +67,10 @@ float sdBox(vec3 p, vec3 b) {
 	return length(max(p, 0.0)) + min(max(p.x, max(p.y, p.z)), 0.0);
 }
 
-float mengerSponge1(vec3 p, float scale, float width) {
+float _mengerSponge(vec3 p, float scale, float width) {
 	float d = sdBox(p, vec3(1.0));
 	float s = 1.0;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 7; i++) {
 		vec3 a = mod(p * s, 2.0) - 1.0;
 		s *= scale;
 		vec3 r = 1.0 - scale * abs(a);
@@ -99,14 +80,20 @@ float mengerSponge1(vec3 p, float scale, float width) {
 	return d;
 }
 
-float dePseudoKleinian(vec3 p) {
+float mengerSponge(vec3 p) {
+	float scale = 3.0;
+	float width = 1.0;
+	return _mengerSponge(p,scale,width);
+}
+
+float pseudoKleinian(vec3 p) {
 	vec3 csize = vec3(0.90756, 0.92436, 0.90756);
 	float size = 1.0;
 	vec3 c = vec3(0.0);
 	float defactor = 1.0;
 	vec3 offset = vec3(0.0);
 	vec3 ap = p + 1.0;
-	for (int i = 0; i < ITERATIONS; i++) {
+	for (int i = 0; i < 10; i++) {
 		ap = p;
 		p = 2.0 * clamp(p, -csize, csize) - p;
 		float r2 = dot(p, p);
@@ -115,7 +102,7 @@ float dePseudoKleinian(vec3 p) {
 		defactor *= k;
 		p += c;
 	}
-	float r = abs(0.5 * abs(p.y - offset.y) / defactor);
+	float r = abs(0.5 * abs(p.z - offset.z) / defactor);
 	return r;
 }
 `

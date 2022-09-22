@@ -10,7 +10,7 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(0.0,2.0,1.0));
+const vec3 LightDir = normalize(vec3(2.0,0.0,1.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -39,28 +39,23 @@ struct effectConfig{
   bool gamma;      //ガンマ補正
 };
 
-struct dualVec{ //三次元の二重数
-  float d;
-  vec3  e;
-};
-
 const effectConfig effect = effectConfig(
   false, //反射
   true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
-  true,  //白熱光
+  false,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  true,  //霧
+  false,  //霧
   true   //ガンマ補正
 );
 `
 
 let fs_main1 =`
-dualVec distanceFunction(vec3 z){
-  return mandelBox(z);
+float distanceFunction(vec3 z){
+  return pseudoKleinian(z);
 }
 `
 
