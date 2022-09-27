@@ -1,7 +1,6 @@
 let fs_setup =`
 precision mediump float;
 uniform float time;
-uniform vec2  mouse;
 uniform vec2  resolution;
 uniform vec3  cDir;
 uniform vec3  cPos;
@@ -62,7 +61,7 @@ struct dfstruct{
 //todo:capdf,cupdf
 let fs_main1 =`
 dfstruct distanceFunction(vec3 z){
-  return dfstruct(pseudoKleinian(z),3);
+  return dfstruct(pseudoKleinian(z),0);
 }
 `
 

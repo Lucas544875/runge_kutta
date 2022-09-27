@@ -13,16 +13,12 @@ const int ERROR = 99;
 
 //マテリアルの設定
 int materialOf(int objectID){
-  if (objectID == 0){//floor
-    return GRID;
-  }else if (objectID == 1){//sphere
+  if (objectID == 0){
+    return WHITE;
+  }else if (objectID == 1){
     return DEBUG;
-  }else if (objectID == 2){//mandelBox
-    return WHITE;
-  }else if (objectID == 3){//mengerSponge
-    return WHITE;
-  }else if (objectID == 4){//puseudoKleinien
-    return WHITE;
+  }else if (objectID == 2){
+    return NORMAL;
   }else{
     return ERROR;
   }
@@ -37,10 +33,10 @@ vec3 normal(vec3 p){
   ));
 }
 
+
 vec3 gridCol(vec3 rPos){
   return mix(vec3(0.3),vec3(step(fract(2.0*rPos.x),0.05),step(fract(2.0*rPos.y),0.05),step(fract(2.0*rPos.z),0.05)),0.5);
 }
-
 
 vec3 debugCol(vec3 rPos){
   return fract(rPos);

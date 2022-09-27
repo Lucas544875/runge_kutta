@@ -3,8 +3,8 @@ let c, cw, ch, gl, eCheck;
 let mouseflag=false;
 let centorx;
 let centory;
-let startTimeary = [];
-let tempTimeary = [0.0,0.0];
+let startTime;
+let tempTime;
 let timenow = 0.0;
 let uniLocation = [];
 let vAttLocation = [];
@@ -73,10 +73,9 @@ window.onload = function(){
 
   //unifoem,atteibute変数の設定
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
-  uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
-  uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
-  uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
-  uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
+  uniLocation[1] = gl.getUniformLocation(prg, 'resolution');
+  uniLocation[2] = gl.getUniformLocation(prg, 'cDir');
+  uniLocation[3] = gl.getUniformLocation(prg, 'cPos');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -107,13 +106,13 @@ window.onload = function(){
   
   // その他の初期化
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  startTimeary[0] = new Date().getTime();
+  startTime = new Date().getTime();
   
   // レンダリング
-  render();
+  render(new Date().getTime());
 };
 
-function render(){
+function render(timestamp){
   if (run === false) {
     return;
   }
@@ -151,11 +150,10 @@ function render(){
   gl.clear(gl.COLOR_BUFFER_BIT);
   
   // uniform 関連
-  gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
-  gl.uniform2fv(uniLocation[1], [0, 0]);
-  gl.uniform2fv(uniLocation[2], [cw, ch]);
-  gl.uniform3fv(uniLocation[3], cDir.tovec());
-  gl.uniform3fv(uniLocation[4], cPos.tovec());
+  gl.uniform1f(uniLocation[0], (timenow - startTime + tempTime) * 0.001);
+  gl.uniform2fv(uniLocation[1], [cw, ch]);
+  gl.uniform3fv(uniLocation[2], cDir.tovec());
+  gl.uniform3fv(uniLocation[3], cPos.tovec());
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -268,10 +266,10 @@ function checkChange(e) {
   run = e.currentTarget.checked;
   console.log(run);
   if(run){
-    startTimeary[0] = new Date().getTime();
+    startTime = new Date().getTime();
     render();
   }else{
-    tempTimeary[0] += timenow - startTimeary[0]
+    tempTime += timenow - startTime;
   }
 };
 
