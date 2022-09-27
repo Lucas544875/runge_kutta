@@ -109,37 +109,38 @@ window.onload = function(){
   startTime = new Date().getTime();
   
   // レンダリング
-  render(new Date().getTime());
+  render();
 };
 
-function render(timestamp){
+function render(){
   if (run === false) {
     return;
   }
+  let moment = (new Date().getTime() - timenow)/1000;
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(0.005*cPos.norm));
+    cPos = cPos.add(cDir.scale(0.5*moment*cPos.norm));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-0.005*cPos.norm));
+    cPos = cPos.add(cDir.scale(-0.5*moment*cPos.norm));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.001*cPos.norm));
+    cPos = cPos.add(xaxes.scale(-0.28*moment*cPos.norm));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.001*cPos.norm));
+    cPos = cPos.add(xaxes.scale(0.28*moment*cPos.norm));
   }
   if(keyQ.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(0.001*cPos.norm));
+    cPos = cPos.add(yaxes.scale(0.28*moment*cPos.norm));
   }
   if(keyE.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(-0.001*cPos.norm));
+    cPos = cPos.add(yaxes.scale(-0.28*moment*cPos.norm));
   }
 
   window.requestAnimationFrame(render, c);
