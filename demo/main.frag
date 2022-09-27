@@ -9,7 +9,7 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(2.0,0.0,1.0));
+const vec3 LightDir = normalize(vec3(2.0,1.0,1.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -18,7 +18,6 @@ struct rayobj{
   vec3  direction;//方向
   float distance; //距離関数の返り値
   float mindist;  //かすめた最短距離
-  float shadowSmoothing;//ソフトシャドウのぼかし係数
   float len;      //出発点からの距離
   float iterate;  //レイマーチの反復回数
   int   objectID;  //オブジェクトID
@@ -46,7 +45,7 @@ const effectConfig effect = effectConfig(
   false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
-  false,  //ソフトシャドウ
+  true,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
   false,  //霧
@@ -93,7 +92,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト

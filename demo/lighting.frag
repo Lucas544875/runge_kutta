@@ -6,7 +6,6 @@ void raymarch(inout rayobj ray){
     dfstruct df = distanceFunction(ray.rPos);
     ray.distance = df.dist;
     ray.mindist = min(ray.mindist,ray.distance);
-    ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.normal = normal(ray.rPos);
       ray.material = materialOf(df.id);
@@ -76,37 +75,24 @@ void incandescenceFunc(inout rayobj ray){ //白熱光
 }
 
 const float shadowCoef = 0.4;
-void shadowFunc(inout rayobj ray){//ソフトシャドウ
-  if (dot(LightDir,ray.normal)<0.0){return;}
-  vec3 origin=ray.rPos + ray.normal * 0.001;
-  rayobj ray2 = rayobj(origin,LightDir,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
-  raymarch(ray2);
-  if (ray2.distance<0.001){
-    ray.fragColor *= shadowCoef;
-  }else{
-    //ray.fragColor *= 1.0 - (1.0 - ray.shadowSmoothing) * shadowCoef;
-    ray.fragColor *= mix(shadowCoef,1.0,ray2.shadowSmoothing);
-  }
-}
-
-float genShadow(vec3 ro, vec3 rd){
+void shadowFunc(inout rayobj ray){
   float h = 0.0;
-  float c = 0.001;
+  float c = 0.000;
   float r = 1.0;
   for(float t = 0.0; t < 50.0; t++){
-    h = distanceFunction(ro + rd * c).dist;
+    h = distanceFunction(ray.rPos + ray.normal*0.001 + LightDir * c).dist;
     if(h < 0.001){
-      return shadowCoef;
+      ray.fragColor *= shadowCoef;
     }
-    r = min(r, h * 16.0 / c);
+    r = min(r, h * 200.0 / c);
     c += h;
   }
-  return mix(shadowCoef, 1.0, r);
+  ray.fragColor *= mix(shadowCoef, 1.0, r);
 }
 
 void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
-  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   float near = 0.10;
   ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
@@ -136,7 +122,7 @@ void reflectFunc(inout rayobj ray){//反射
   for (int i = 0;i<MAX_REFRECT;i++){
     float dot = -dot(rays[i].direction,rays[i].normal);
     vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
-    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
     raymarch(rays[i+1]);
 
     if(abs(rays[i].distance) < 0.001){
