@@ -77,17 +77,19 @@ void incandescenceFunc(inout rayobj ray){ //白熱光
 const float shadowCoef = 0.4;
 void shadowFunc(inout rayobj ray){
   float h = 0.0;
-  float c = 0.000;
+  float c = 0.0;
   float r = 1.0;
   for(float t = 0.0; t < 50.0; t++){
     h = distanceFunction(ray.rPos + ray.normal*0.001 + LightDir * c).dist;
     if(h < 0.001){
       ray.fragColor *= shadowCoef;
+      return;
     }
     r = min(r, h * 200.0 / c);
     c += h;
   }
   ray.fragColor *= mix(shadowCoef, 1.0, r);
+  return;
 }
 
 void globallightFunc(inout rayobj ray){//大域照明
