@@ -5,7 +5,7 @@ let centorx;
 let centory;
 let startTime;
 let tempTime;
-let timenow = 0.0;
+let timenow = new Date().getTime();
 let uniLocation = [];
 let vAttLocation = [];
 let attStride = [];
@@ -117,35 +117,35 @@ function render(){
     return;
   }
   let moment = (new Date().getTime() - timenow)/1000;
+  timenow = new Date().getTime();
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(0.5*moment*cPos.norm));
+    cPos = cPos.add(cDir.scale(2*moment));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-0.5*moment*cPos.norm));
+    cPos = cPos.add(cDir.scale(-2*moment));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.28*moment*cPos.norm));
+    cPos = cPos.add(xaxes.scale(-0.4*moment));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.28*moment*cPos.norm));
+    cPos = cPos.add(xaxes.scale(0.4*moment));
   }
   if(keyQ.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(0.28*moment*cPos.norm));
+    cPos = cPos.add(yaxes.scale(0.4*moment));
   }
   if(keyE.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(-0.28*moment*cPos.norm));
+    cPos = cPos.add(yaxes.scale(-0.4*moment));
   }
 
   window.requestAnimationFrame(render, c);
   // 時間管理
-  timenow = new Date().getTime();
   
   // カラーバッファをクリア
   gl.clear(gl.COLOR_BUFFER_BIT);
