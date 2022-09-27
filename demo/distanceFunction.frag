@@ -11,11 +11,15 @@ float sphere1(vec3 z){
 }
 
 float plane(vec3 z,vec3 normal,float offset){
-	return dot(z,normalize(normal)) + offset;
+	return dot(z,normalize(normal)) - offset;
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),1.0);
+  return plane(z,vec3(0.0,0.0,1.0), -1.0);
+}
+
+float plane1(vec3 z){//plane
+  return plane(z,vec3(0.0,0.0,1.0),1.5);
 }
 
 void sphereFold(inout vec3 z, inout float dz) {

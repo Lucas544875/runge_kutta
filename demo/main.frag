@@ -58,10 +58,27 @@ struct dfstruct{
   int   id;
 };
 `
-//todo:capdf,cupdf
 let fs_main1 =`
+dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
+  if (df1.dist < df2.dist){
+    return df2;
+  }else{
+    return df1;
+  }
+}
+
+dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
+  if (df1.dist < df2.dist){
+    return df1;
+  }else{
+    return df2;
+  }
+}
+
 dfstruct distanceFunction(vec3 z){
-  return dfstruct(pseudoKleinian(z),0);
+  dfstruct plane = dfstruct(plane1(z),3);
+  dfstruct df = dfmax(plane, dfstruct(pseudoKleinian(z),0));
+  return df;
 }
 `
 
@@ -105,11 +122,11 @@ void main(void){
       globallightFunc(ray);
     }
   }
-  if (effect.fog){
-    fogFunc(ray);
-  }
   if (effect.grow){
     growFunc(ray);
+  }
+  if (effect.fog){
+    fogFunc(ray);
   }
   if (effect.gamma){
     gammaFunc(ray);

@@ -89,6 +89,21 @@ void shadowFunc(inout rayobj ray){//ソフトシャドウ
   }
 }
 
+float genShadow(vec3 ro, vec3 rd){
+  float h = 0.0;
+  float c = 0.001;
+  float r = 1.0;
+  for(float t = 0.0; t < 50.0; t++){
+    h = distanceFunction(ro + rd * c).dist;
+    if(h < 0.001){
+      return shadowCoef;
+    }
+    r = min(r, h * 16.0 / c);
+    c += h;
+  }
+  return mix(shadowCoef, 1.0, r);
+}
+
 void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
   rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
@@ -111,9 +126,7 @@ void fogFunc(inout rayobj ray){//霧
 }
 
 void gammaFunc(inout rayobj ray){//ガンマ補正
-  ray.fragColor.x=pow(ray.fragColor.x,2.2);
-  ray.fragColor.y=pow(ray.fragColor.y,2.2);
-  ray.fragColor.z=pow(ray.fragColor.z,2.2);
+  ray.fragColor=pow(ray.fragColor,vec3(2.2));
 }
 
 void reflectFunc(inout rayobj ray){//反射
