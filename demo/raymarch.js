@@ -31,13 +31,13 @@ window.onload = function(){
   eCheck = document.getElementById('check');
 
   // キャンバスサイズの設定
-  ch=900;cw=1600;
+  ch=512;cw=512;
   c.height=ch;
   c.width=cw;
 
   //視点の設定
   cDir=Quatarnion.vec(-1,0,0);
-  cPos=Quatarnion.vec(11,0,0);
+  cPos=Quatarnion.vec(1,1,2.5);
 
   //録画の設定
   let rstart = document.getElementById('recStart');

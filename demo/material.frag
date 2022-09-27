@@ -12,16 +12,16 @@ const int DEBUG = 98;
 const int ERROR = 99;
 
 //マテリアルの設定
-int materialOf(vec3 z,float distance){
-  if (floor1(z) == distance){
+int materialOf(int objectID){
+  if (objectID == 0){//floor
     return GRID;
-  }else if (sphere1(z) == distance){
+  }else if (objectID == 1){//sphere
     return DEBUG;
-  }else if (mandelBox(z) == distance){
+  }else if (objectID == 2){//mandelBox
     return WHITE;
-  }else if (mengerSponge(z) == distance){
+  }else if (objectID == 3){//mengerSponge
     return WHITE;
-  }else if (pseudoKleinian(z) == distance){
+  }else if (objectID == 4){//puseudoKleinien
     return WHITE;
   }else{
     return ERROR;
@@ -31,15 +31,10 @@ int materialOf(vec3 z,float distance){
 vec3 normal(vec3 p){
   float d = 0.0001;
   return normalize(vec3(
-    distanceFunction(p + vec3(  d, 0.0, 0.0)) - distanceFunction(p + vec3( -d, 0.0, 0.0)),
-    distanceFunction(p + vec3(0.0,   d, 0.0)) - distanceFunction(p + vec3(0.0,  -d, 0.0)),
-    distanceFunction(p + vec3(0.0, 0.0,   d)) - distanceFunction(p + vec3(0.0, 0.0,  -d))
+    distanceFunction(p + vec3(  d, 0.0, 0.0)).dist - distanceFunction(p + vec3( -d, 0.0, 0.0)).dist,
+    distanceFunction(p + vec3(0.0,   d, 0.0)).dist - distanceFunction(p + vec3(0.0,  -d, 0.0)).dist,
+    distanceFunction(p + vec3(0.0, 0.0,   d)).dist - distanceFunction(p + vec3(0.0, 0.0,  -d)).dist
   ));
-}
-
-vec3 hsv(float h, float s, float v) {
-  // h: 0.0 - 2PI, s: 0.0 - 1.0, v: 0.0 - 1.0, 円柱モデル
-  return ((clamp(abs(fract(mod(h,2.0*PI)+vec3(0,2,1)/3.)*6.-3.)-1.,0.,1.)-1.)*s+1.)*v;
 }
 
 vec3 gridCol(vec3 rPos){
@@ -49,13 +44,6 @@ vec3 gridCol(vec3 rPos){
 
 vec3 debugCol(vec3 rPos){
   return fract(rPos);
-}
-
-float manhattan (vec3 p,vec3 q){
-  return abs(p.x-q.x)+abs(p.y-q.y)+abs(p.z-q.z);
-}
-float chebyshev (vec3 p,vec3 q){
-  return max(max(abs(p.x-q.x),abs(p.y-q.y)),abs(p.z-q.z));
 }
 
 vec3 kadoCol(vec3 rPos){

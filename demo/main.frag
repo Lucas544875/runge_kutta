@@ -21,6 +21,8 @@ struct rayobj{
   float mindist;  //かすめた最短距離
   float shadowSmoothing;//ソフトシャドウのぼかし係数
   float len;      //出発点からの距離
+  float iterate;  //レイマーチの反復回数
+  int   objectID;  //オブジェクトID
   int   material; //マテリアルID
   vec3  normal;   //法線ベクトル
   vec3  fragColor;//色
@@ -51,11 +53,16 @@ const effectConfig effect = effectConfig(
   false,  //霧
   true   //ガンマ補正
 );
-`
 
+struct dfstruct{
+  float dist;
+  int   id;
+};
+`
+//todo:capdf,cupdf
 let fs_main1 =`
-float distanceFunction(vec3 z){
-  return pseudoKleinian(z);
+dfstruct distanceFunction(vec3 z){
+  return dfstruct(pseudoKleinian(z),3);
 }
 `
 
@@ -70,7 +77,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト

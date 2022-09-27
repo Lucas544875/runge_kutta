@@ -3,22 +3,26 @@ let fs_lighting =`
 
 void raymarch(inout rayobj ray){
   for(int i = 0; i < Iteration; i++){
-    ray.distance = distanceFunction(ray.rPos);
+    dfstruct df = distanceFunction(ray.rPos);
+    ray.distance = df.dist;
     ray.mindist = min(ray.mindist,ray.distance);
     ray.shadowSmoothing=min(ray.shadowSmoothing,ray.distance * 20.0 / ray.len);
     if(ray.distance < 0.001){
       ray.normal = normal(ray.rPos);
-      ray.material = materialOf(ray.rPos,ray.distance);
+      ray.material = materialOf(df.id);
+      ray.iterate = float(i)/float(Iteration);
       return;
     }
     ray.len += ray.distance;
     if(ray.len > 100.0){
       ray.material = SAIHATE;
+      ray.iterate = 1.0;//i/Iteration;
       return;
     }
     ray.rPos += ray.distance * ray.direction;
   }
   ray.material = LESSSTEP;
+  ray.iterate = 1.0;
 }
 
 //ライティング
@@ -36,14 +40,6 @@ void specularFunc(inout rayobj ray){//鏡面反射
   float x = dot(reflection,LightDir);
   float specular=1.0/(50.0*(1.001-clamp(x,0.0,1.0)));
   ray.fragColor = clamp(ray.fragColor+specular,0.0,1.0);
-}
-
-vec3 Hadamard(vec3 v,vec3 w){
-  return vec3(
-    v.x * w.x,
-    v.y * w.y,
-    v.z * w.z
-  );
 }
 
 void diffuseFunc(inout rayobj ray){//拡散光
@@ -83,7 +79,7 @@ const float shadowCoef = 0.4;
 void shadowFunc(inout rayobj ray){//ソフトシャドウ
   if (dot(LightDir,ray.normal)<0.0){return;}
   vec3 origin=ray.rPos + ray.normal * 0.001;
-  rayobj ray2 = rayobj(origin,LightDir,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,LightDir,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   if (ray2.distance<0.001){
     ray.fragColor *= shadowCoef;
@@ -95,7 +91,7 @@ void shadowFunc(inout rayobj ray){//ソフトシャドウ
 
 void globallightFunc(inout rayobj ray){//大域照明
   vec3 origin = ray.rPos+ray.normal*0.001;
-  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
+  rayobj ray2 = rayobj(origin,ray.normal,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray2);
   float near = 0.10;
   ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
@@ -127,7 +123,7 @@ void reflectFunc(inout rayobj ray){//反射
   for (int i = 0;i<MAX_REFRECT;i++){
     float dot = -dot(rays[i].direction,rays[i].normal);
     vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
-    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,1.0,0.0,0,vec3(0.0),vec3(0.0));
+    rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,INFINITY,1.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
     raymarch(rays[i+1]);
 
     if(abs(rays[i].distance) < 0.001){
