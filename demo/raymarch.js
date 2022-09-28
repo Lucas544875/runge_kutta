@@ -120,28 +120,28 @@ function render(){
   timenow = new Date().getTime();
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(2*moment));
+    cPos = cPos.add(cDir.scale(5*moment));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-2*moment));
+    cPos = cPos.add(cDir.scale(-5*moment));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.4*moment));
+    cPos = cPos.add(xaxes.scale(-moment));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.4*moment));
+    cPos = cPos.add(xaxes.scale(moment));
   }
   if(keyQ.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(0.4*moment));
+    cPos = cPos.add(yaxes.scale(moment));
   }
   if(keyE.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(-0.4*moment));
+    cPos = cPos.add(yaxes.scale(-moment));
   }
 
   window.requestAnimationFrame(render, c);
