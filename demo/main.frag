@@ -46,8 +46,8 @@ const effectConfig effect = effectConfig(
   false,  //白熱光
   true,  //ソフトシャドウ
   false, //大域照明
-  true, //グロー
-  true,  //霧
+  false, //グロー
+  false,  //霧
   true   //ガンマ補正
 );
 
@@ -94,11 +94,11 @@ void main(void){
   //レイの定義と移動
   rayobj ray = rayobj(cPos,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
+  ray.material = materialOf(ray.objectID);
 
   //エフェクト
   ray.fragColor = vec3(0.0,0.0,0.0);
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
-
     if (effect.reflect){
       reflectFunc(ray);
     }
@@ -121,7 +121,7 @@ void main(void){
       globallightFunc(ray);
     }
   }else{//描写範囲外 or ステップ数不足
-
+    skysphereFunc(ray);
   }
   //全体
   if (effect.grow){

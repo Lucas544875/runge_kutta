@@ -7,19 +7,19 @@ void raymarch(inout rayobj ray){
     ray.distance = df.dist;
     if(ray.distance < 0.001){
       ray.normal = normal(ray.rPos);
-      ray.material = materialOf(df.id);
+      ray.objectID = df.id;
       ray.iterate = float(i)/float(Iteration);
       return;
     }
     ray.len += ray.distance;
     if(ray.len > 100.0){
-      ray.material = SAIHATE;
+      ray.objectID = 98;
       ray.iterate = 1.0;//i/Iteration;
       return;
     }
     ray.rPos += ray.distance * ray.direction;
   }
-  ray.material = LESSSTEP;
+  ray.objectID = 99;
   ray.iterate = 1.0;
 }
 
@@ -97,6 +97,12 @@ void globallightFunc(inout rayobj ray){//大域照明
   raymarch(ray2);
   float near = 0.10;
   ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
+}
+
+void skysphereFunc(inout rayobj ray){//天球
+  if (ray.objectID == 98){
+    ray.fragColor += color(ray);
+  }
 }
 
 const float growIntencity = 1.0;

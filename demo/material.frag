@@ -19,6 +19,10 @@ int materialOf(int objectID){
     return DEBUG;
   }else if (objectID == 2){
     return NORMAL;
+  }else if (objectID == 98){
+    return SAIHATE;
+  }else if (objectID == 99){
+    return LESSSTEP;
   }else{
     return ERROR;
   }
@@ -65,6 +69,8 @@ vec3 color(rayobj ray){
     return vec3(0.454, 0.301, 0.211);
   }else if (ray.material == NORMAL){
     return normalCol(ray.rPos);
+  }else if (ray.material == SAIHATE){
+    return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);
   }
