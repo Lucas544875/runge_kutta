@@ -16,7 +16,7 @@ int materialOf(int objectID){
   if (objectID == 0){
     return WHITE;
   }else if (objectID == 1){
-    return DEBUG;
+    return GRID;
   }else if (objectID == 2){
     return NORMAL;
   }else if (objectID == 98){

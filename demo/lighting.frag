@@ -75,6 +75,7 @@ void incandescenceFunc(inout rayobj ray){ //白熱光
 
 const float shadowCoef = 0.4;
 void shadowFunc(inout rayobj ray){
+  if (dot(ray.normal, LightDir)<0.0){return;}
   float h = 0.0;
   float c = 0.0;
   float r = 1.0;
