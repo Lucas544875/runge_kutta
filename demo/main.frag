@@ -17,7 +17,6 @@ struct rayobj{
   vec3  rPos;     //レイの場所
   vec3  direction;//方向
   float distance; //距離関数の返り値
-  float mindist;  //かすめた最短距離
   float len;      //出発点からの距離
   float iterate;  //レイマーチの反復回数
   int   objectID;  //オブジェクトID
@@ -48,7 +47,7 @@ const effectConfig effect = effectConfig(
   true,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  false,  //霧
+  true,  //霧
   true   //ガンマ補正
 );
 
@@ -75,8 +74,9 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct plane = dfstruct(plane1(z),3);
-  dfstruct df = dfmax(plane, dfstruct(pseudoKleinian(z),0));
+  dfstruct plane = dfstruct(floor1(z),1);
+  dfstruct sphere = dfstruct(sphere1(z),2);
+  dfstruct df = dfmin(plane, sphere);
   return df;
 }
 `
@@ -92,7 +92,7 @@ void main(void){
   vec3 direction = normalize(turn(vec4(0,cDir),rot).yzw);
 
   //レイの定義と移動
-  rayobj ray = rayobj(cPos,direction,0.0,INFINITY,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
+  rayobj ray = rayobj(cPos,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
 
   //エフェクト
@@ -120,6 +120,8 @@ void main(void){
     if (effect.globallight){
       globallightFunc(ray);
     }
+  }else{//描写範囲外 or ステップ数不足
+
   }
   if (effect.grow){
     growFunc(ray);

@@ -15,7 +15,7 @@ float plane(vec3 z,vec3 normal,float offset){
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0), -1.0);
+  return plane(z,vec3(0.0,0.0,1.0), -0.8);
 }
 
 float plane1(vec3 z){//plane
