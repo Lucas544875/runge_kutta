@@ -39,7 +39,7 @@ struct effectConfig{
 };
 
 const effectConfig effect = effectConfig(
-  false, //反射
+  true, //反射
   true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
@@ -97,7 +97,6 @@ void main(void){
   ray.material = materialOf(ray.objectID);
 
   //エフェクト
-  ray.fragColor = vec3(0.0,0.0,0.0);
   if(abs(ray.distance) < 0.001){//物体表面にいる場合
     if (effect.reflect){
       reflectFunc(ray);

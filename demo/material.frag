@@ -87,6 +87,8 @@ float refrectance(int material){
     return 0.3;
   }else if (material == MANDEL){
     return 0.3;
+  }else if (material == NORMAL){
+    return 0.4;
   }else{
     return 0.0;
   }

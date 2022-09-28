@@ -111,12 +111,12 @@ void growFunc(inout rayobj ray){//グロー
   ray.fragColor += grow;
 }
 
+const float minRadius = 60.0;
+const float maxRadius = 80.0;
 void fogFunc(inout rayobj ray){//霧
   rayobj ray2 = ray;
   ray2.material = SAIHATE;
   vec3 fogColor = color(ray2);
-  const float minRadius = 60.0;
-  const float maxRadius = 80.0;
   float fogcoef = clamp((ray.len-minRadius)/(maxRadius-minRadius),0.0,1.0);
   ray.fragColor = mix(ray.fragColor, fogColor, fogcoef);
 }
@@ -131,43 +131,53 @@ void reflectFunc(inout rayobj ray){//反射
   int escape = MAX_REFRECT;
   for (int i = 0;i<MAX_REFRECT;i++){
     float dot = -dot(rays[i].direction,rays[i].normal);
-    vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;
+    vec3 direction=rays[i].direction+2.0*dot*rays[i].normal;//refrect
     rays[i+1] = rayobj(rays[i].rPos+rays[i].normal*0.001,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
     raymarch(rays[i+1]);
+    rays[i+1].material = materialOf(rays[i+1].objectID);
 
-    if(abs(rays[i].distance) < 0.001){
-      rays[i+1].fragColor = color(rays[i+1]);
-    }else{
+    if(abs(rays[i].distance) >= 0.001){//脱出
       escape = i;
       break;
     }
   }
 
-  for (int i = MAX_REFRECT;i >= 0;i--){
+  for (int i = MAX_REFRECT;i >= 1;i--){
     if (i>escape){continue;}
 
-    if (effect.specular){
-      specularFunc(rays[i]);
+    if(abs(ray.distance) < 0.001){//物体表面にいる場合
+      if(effect.ambient){
+        ambientFunc(rays[i]);
+      }
+      if (effect.specular){
+        specularFunc(rays[i]);
+      }
+      if (effect.diffuse){
+        diffuseFunc(rays[i]);
+      }
+      if (effect.incandescence){
+        incandescenceFunc(rays[i]);
+      }
+      if (effect.shadow){
+        shadowFunc(rays[i]);
+      }
+      if (effect.globallight){
+        globallightFunc(rays[i]);
+      }
+    }else{//描写範囲外 or ステップ数不足
+      skysphereFunc(rays[i]);
     }
-    if (effect.diffuse){
-      diffuseFunc(rays[i]);
-    }
-    if (effect.shadow){
-      shadowFunc(rays[i]);
-    }
-    if (effect.globallight){
-      globallightFunc(rays[i]);
+    //全体
+    if (effect.grow){
+      growFunc(rays[i]);
     }
     if (effect.fog){
       fogFunc(rays[i]);
     }
 
-    if (i == 0){
-      ray.fragColor = rays[i].fragColor;
-    }else{
-      float refrectance = refrectance(rays[i-1].material);
-      rays[i-1].fragColor = mix(rays[i-1].fragColor,rays[i].fragColor,refrectance);
-    }
+    float refrectance = refrectance(rays[i-1].material);
+    rays[i-1].fragColor += refrectance*rays[i].fragColor;
   }
+  ray.fragColor += rays[0].fragColor;
 }
 `
