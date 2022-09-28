@@ -14,7 +14,7 @@ void raymarch(inout rayobj ray){
     ray.len += ray.distance;
     if(ray.len > 100.0){
       ray.objectID = 98;
-      ray.iterate = 1.0;//i/Iteration;
+      ray.iterate = float(i)/float(Iteration);
       return;
     }
     ray.rPos += ray.distance * ray.direction;
@@ -111,10 +111,14 @@ void growFunc(inout rayobj ray){//グロー
   ray.fragColor += grow;
 }
 
-const vec3 fogColor = vec3(0.0);//vec3(160.0,216.0,239.0)/256.0;
 void fogFunc(inout rayobj ray){//霧
-  float fog = clamp((ray.len-10.0)/20.0,0.0,1.0);
-  ray.fragColor = (ray.fragColor)*(1.0-fog)+fogColor*(fog);
+  rayobj ray2 = ray;
+  ray2.material = SAIHATE;
+  vec3 fogColor = color(ray2);
+  const float minRadius = 60.0;
+  const float maxRadius = 80.0;
+  float fogcoef = clamp((ray.len-minRadius)/(maxRadius-minRadius),0.0,1.0);
+  ray.fragColor = mix(ray.fragColor, fogColor, fogcoef);
 }
 
 void gammaFunc(inout rayobj ray){//ガンマ補正

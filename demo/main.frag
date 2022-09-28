@@ -46,8 +46,8 @@ const effectConfig effect = effectConfig(
   false,  //白熱光
   true,  //ソフトシャドウ
   false, //大域照明
-  false, //グロー
-  false,  //霧
+  true, //グロー
+  true,  //霧
   true   //ガンマ補正
 );
 
