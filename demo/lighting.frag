@@ -99,13 +99,10 @@ void globallightFunc(inout rayobj ray){//大域照明
   ray.fragColor *= clamp(min(near,ray2.len)/near,0.0,1.0);
 }
 
-//const float growSise = 0.2;
-//void growFunc(inout rayobj ray){//グロー
-//  if (ray.distance<0.001){return;}
-//  float grow =1.0 - min(ray.mindist/growSise,1.0);
-//  ray.fragColor = clamp(ray.fragColor+0.1*grow,0.0,1.0);
-//}
+const float growIntencity = 1.0;
 void growFunc(inout rayobj ray){//グロー
+  vec3 grow = vec3(ray.iterate) * growIntencity;
+  ray.fragColor += grow;
 }
 
 const vec3 fogColor = vec3(0.0);//vec3(160.0,216.0,239.0)/256.0;

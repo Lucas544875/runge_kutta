@@ -46,7 +46,7 @@ const effectConfig effect = effectConfig(
   false,  //白熱光
   true,  //ソフトシャドウ
   false, //大域照明
-  false, //グロー
+  true, //グロー
   true,  //霧
   true   //ガンマ補正
 );
@@ -123,6 +123,7 @@ void main(void){
   }else{//描写範囲外 or ステップ数不足
 
   }
+  //全体
   if (effect.grow){
     growFunc(ray);
   }
