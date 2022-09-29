@@ -108,7 +108,9 @@ void skysphereFunc(inout rayobj ray){//天球
 
 const float growIntencity = 1.0;
 void growFunc(inout rayobj ray){//グロー
-  vec3 grow = vec3(ray.iterate) * growIntencity;
+  float coef = smoothstep(0.0,0.95,ray.iterate);
+  const vec3 growCol = vec3(1.0);
+  vec3 grow = growIntencity * coef * growCol;
   ray.fragColor += grow;
 }
 
