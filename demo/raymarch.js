@@ -55,6 +55,17 @@ window.onload = function(){
 		anchor.style.display = 'block';
 	}
 
+  //エクスポートの設定
+  let exportButton = document.getElementById("shaderExport");
+  function save(){
+    let txt = "let fragmentShader =`"+ fragmentShader + '`'
+    const blob = new Blob([txt], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href =  URL.createObjectURL(blob);
+    a.download = 'shader.txt';
+    a.click();
+  }
+
   // イベントリスナー登録
   eCheck.addEventListener('change', checkChange, true);
   document.addEventListener("mousedown",mouseDown,true);
@@ -64,6 +75,7 @@ window.onload = function(){
   c.addEventListener('mousemove', mouseMove, true);
   rstart.addEventListener('click',() => recorder.start());
   rstop.addEventListener('click',() => recorder.stop());
+  exportButton.addEventListener('click',save)
 
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
