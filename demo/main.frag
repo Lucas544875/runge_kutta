@@ -39,15 +39,15 @@ struct effectConfig{
 };
 
 const effectConfig effect = effectConfig(
-  true, //反射
+  false, //反射
   true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
-  false,  //白熱光
-  true,  //ソフトシャドウ
+  true,  //白熱光
+  false,  //ソフトシャドウ
   false, //大域照明
   true, //グロー
-  true,  //霧
+  false,  //霧
   true   //ガンマ補正
 );
 
@@ -74,10 +74,8 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct plane = dfstruct(floor1(z),1);
-  dfstruct sphere = dfstruct(sphere1(z),2);
-  dfstruct df = dfmin(plane, sphere);
-  return df;
+  dfstruct mandelBox = dfstruct(mandelBox(z),0);
+  return mandelBox;
 }
 `
 
@@ -121,6 +119,7 @@ void main(void){
     }
   }else{//描写範囲外 or ステップ数不足
     skysphereFunc(ray);
+    lessStepFunc(ray);
   }
   //全体
   if (effect.grow){

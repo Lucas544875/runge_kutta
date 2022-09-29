@@ -25,10 +25,10 @@ void raymarch(inout rayobj ray){
 
 //ライティング
 void ambientFunc(inout rayobj ray){//アンビエント
-  vec3 color = color(ray);
-  vec3 ambcolor = vec3(1.0);
-  float ambIntensity =  0.2;
-  ray.fragColor += ambIntensity * dot(color,ambcolor);
+  vec3 baseColor = color(ray);
+  vec3 ambColor = vec3(1.0);
+  float ambIntensity =  0.4;
+  ray.fragColor += ambIntensity * Hadamard(baseColor,ambColor);
   ray.fragColor = clamp(ray.fragColor,0.0,1.0);
 }
 
@@ -43,7 +43,7 @@ void specularFunc(inout rayobj ray){//鏡面反射
 void diffuseFunc(inout rayobj ray){//拡散光
   vec3 color = color(ray);
   vec3 lightColor = vec3(1.0);//(0.741, 0.741, 0.717);
-  float diffIntensity = 0.4;
+  float diffIntensity = 0.7;
   float diffuse = max(0.0,dot(LightDir, ray.normal));
   ray.fragColor += diffIntensity * diffuse * Hadamard(color,lightColor);
   ray.fragColor = clamp(ray.fragColor,0.0,1.0);
@@ -106,10 +106,16 @@ void skysphereFunc(inout rayobj ray){//天球
   }
 }
 
+void lessStepFunc(inout rayobj ray){
+  if (ray.objectID == 99){
+    ray.fragColor += color(ray);
+  }
+}
+
 const float growIntencity = 1.0;
 void growFunc(inout rayobj ray){//グロー
   float coef = smoothstep(0.0,0.95,ray.iterate);
-  const vec3 growCol = vec3(1.0);
+  const vec3 growCol = vec3(1.0,0.0,0.0);
   vec3 grow = growIntencity * coef * growCol;
   ray.fragColor += grow;
 }

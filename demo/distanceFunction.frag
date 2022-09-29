@@ -40,12 +40,12 @@ void sphereFold(inout vec3 z, inout float dz) {
 }
 
 void boxFold(inout vec3 z, inout float dz) {
-  float foldingLimit=0.6;//time/100.0;//定数
+  float foldingLimit=1.14;//定数0.6
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
 }
 
 float mandelBox(vec3 z){
-  float Scale = 1.9;//+time/20.0 ;//定数
+  float Scale = -2.18 ;//定数1.9
 	vec3 offset = z;
 	float dr = 1.0;
 	for (int n = 0; n < 16; n++) {

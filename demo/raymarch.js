@@ -37,7 +37,7 @@ window.onload = function(){
 
   //視点の設定
   cDir=Quatarnion.vec(-1,0,0);
-  cPos=Quatarnion.vec(1,1,2.5);
+  cPos=Quatarnion.vec(11,0,0);
 
   //録画の設定
   let rstart = document.getElementById('recStart');
