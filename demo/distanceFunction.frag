@@ -19,7 +19,7 @@ float floor1(vec3 z){//plane
 }
 
 float plane1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0),1.0);
+  return plane(z,normalize(vec3(-1.0,0.0,0.0)),0.5);
 }
 
 void sphereFold(inout vec3 z, inout float dz) {
@@ -40,12 +40,12 @@ void sphereFold(inout vec3 z, inout float dz) {
 }
 
 void boxFold(inout vec3 z, inout float dz) {
-  float foldingLimit=1.14;//定数0.6
+  float foldingLimit=0.6;//定数
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
 }
 
 float mandelBox(vec3 z){
-  float Scale = -2.18 ;//定数1.9
+  float Scale = 1.9 ;//定数
 	vec3 offset = z;
 	float dr = 1.0;
 	for (int n = 0; n < 16; n++) {

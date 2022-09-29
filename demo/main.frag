@@ -9,7 +9,7 @@ const float PI = 3.14159265;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(2.0,1.0,1.0));
+const vec3 LightDir = normalize(vec3(2.0,1.0,0.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -43,10 +43,10 @@ const effectConfig effect = effectConfig(
   true,  //アンビエント
   false, //ハイライト(鏡面反射)
   true, //拡散光
-  true,  //白熱光
+  false,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
-  true, //グロー
+  false, //グロー
   false,  //霧
   true   //ガンマ補正
 );
@@ -75,7 +75,9 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 
 dfstruct distanceFunction(vec3 z){
   dfstruct mandelBox = dfstruct(mandelBox(z),0);
-  return mandelBox;
+  dfstruct plane = dfstruct(plane1(z),1);
+  dfstruct df = dfmax(mandelBox,plane);
+  return df;
 }
 `
 

@@ -62,7 +62,7 @@ window.onload = function(){
     const blob = new Blob([txt], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href =  URL.createObjectURL(blob);
-    a.download = 'shader.txt';
+    a.download = 'shader.frag';
     a.click();
   }
 

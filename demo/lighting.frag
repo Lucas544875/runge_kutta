@@ -27,7 +27,7 @@ void raymarch(inout rayobj ray){
 void ambientFunc(inout rayobj ray){//アンビエント
   vec3 baseColor = color(ray);
   vec3 ambColor = vec3(1.0);
-  float ambIntensity =  0.7;
+  float ambIntensity =  0.6;
   ray.fragColor += ambIntensity * Hadamard(baseColor,ambColor);
   ray.fragColor = clamp(ray.fragColor,0.0,1.0);
 }
@@ -56,21 +56,12 @@ void _incandescenceFunc(inout rayobj ray, vec3 incandescenceColor, vec3 incCente
 }
 
 void incandescenceFunc(inout rayobj ray){ //白熱光
-  vec3 incandescenceColor = vec3(1.000, 0.501, 0.200);
-  vec3 incCenter0 = vec3( 2.0,0.0,0.0);
-  vec3 incCenter1 = vec3(-2.0,0.0,0.0);
-  vec3 incCenter2 = vec3(0.0, 2.0,0.0);
-  vec3 incCenter3 = vec3(0.0,-2.0,0.0);
-  vec3 incCenter4 = vec3(0.0,0.0, 2.0);
-  vec3 incCenter5 = vec3(0.0,0.0,-2.0);
-  float incRadius = 2.0;
-  float incIntensity = 1.5;
-  _incandescenceFunc(ray, incandescenceColor, incCenter0, incRadius, incIntensity);
-  _incandescenceFunc(ray, incandescenceColor, incCenter1, incRadius, incIntensity);
-  _incandescenceFunc(ray, incandescenceColor, incCenter2, incRadius, incIntensity);
-  _incandescenceFunc(ray, incandescenceColor, incCenter3, incRadius, incIntensity);
-  _incandescenceFunc(ray, incandescenceColor, incCenter4, incRadius, incIntensity);
-  _incandescenceFunc(ray, incandescenceColor, incCenter5, incRadius, incIntensity);
+  vec3 incandescenceColor = vec3(0.000, 0.447, 0.737);
+  vec3 incCenter = vec3(0.0);
+  float incRadius = 13.0;
+  float incIntensity = 1.0;
+  _incandescenceFunc(ray, incandescenceColor, incCenter, incRadius, incIntensity);
+
 }
 
 const float shadowCoef = 0.4;

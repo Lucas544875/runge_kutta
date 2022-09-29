@@ -14,7 +14,9 @@ const int ERROR = 99;
 //マテリアルの設定
 int materialOf(int objectID){
   if (objectID == 0){
-    return BROWN;
+    return WHITE;
+  }else if (objectID == 1){
+    return WHITE;
   }else if (objectID == 98){
     return SAIHATE;
   }else if (objectID == 99){
@@ -60,13 +62,13 @@ vec3 color(rayobj ray){
   }else if (ray.material == MANDEL){
     return kadoCol(ray.rPos);
   }else if (ray.material == LESSSTEP){
-    return vec3(0.0);
+    return vec3(0.192);
   }else if (ray.material == BROWN){
     return vec3(0.454, 0.301, 0.211);
   }else if (ray.material == NORMAL){
     return normalCol(ray.rPos);
   }else if (ray.material == SAIHATE){
-    return vec3(0.0);
+    return vec3(0.192);
     //return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);
