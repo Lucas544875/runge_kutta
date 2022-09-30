@@ -31,7 +31,7 @@ window.onload = function(){
   eCheck = document.getElementById('check');
 
   // キャンバスサイズの設定
-  ch=645;cw=860;
+  ch=900;cw=1200;
   c.height=ch;
   c.width=cw;
 
