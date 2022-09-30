@@ -3,9 +3,9 @@ let c, cw, ch, gl, eCheck;
 let mouseflag=false;
 let centorx;
 let centory;
-let startTimeary = [];
-let tempTimeary = [0.0,0.0];
-let timenow = 0.0;
+let startTime;
+let tempTime;
+let timenow = new Date().getTime();
 let uniLocation = [];
 let vAttLocation = [];
 let attStride = [];
@@ -31,13 +31,13 @@ window.onload = function(){
   eCheck = document.getElementById('check');
 
   // キャンバスサイズの設定
-  ch=900;cw=1600;
+  ch=512;cw=512;
   c.height=ch;
   c.width=cw;
 
   //視点の設定
-  cDir=Quatarnion.vec(0,-1,0);
-  cPos=Quatarnion.vec(0,11,0);
+  cDir=Quatarnion.vec(-1,0,0);
+  cPos=Quatarnion.vec(11,0,0);
 
   //録画の設定
   let rstart = document.getElementById('recStart');
@@ -55,6 +55,17 @@ window.onload = function(){
 		anchor.style.display = 'block';
 	}
 
+  //エクスポートの設定
+  let exportButton = document.getElementById("shaderExport");
+  function save(){
+    let txt = "let fragmentShader =`"+ fragmentShader + '`'
+    const blob = new Blob([txt], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href =  URL.createObjectURL(blob);
+    a.download = 'shader.frag';
+    a.click();
+  }
+
   // イベントリスナー登録
   eCheck.addEventListener('change', checkChange, true);
   document.addEventListener("mousedown",mouseDown,true);
@@ -64,6 +75,7 @@ window.onload = function(){
   c.addEventListener('mousemove', mouseMove, true);
   rstart.addEventListener('click',() => recorder.start());
   rstop.addEventListener('click',() => recorder.stop());
+  exportButton.addEventListener('click',save)
 
   // WebGL コンテキストを取得
   gl = c.getContext('webgl');
@@ -73,10 +85,9 @@ window.onload = function(){
 
   //unifoem,atteibute変数の設定
   uniLocation[0] = gl.getUniformLocation(prg, 'time');
-  uniLocation[1] = gl.getUniformLocation(prg, 'mouse');
-  uniLocation[2] = gl.getUniformLocation(prg, 'resolution');
-  uniLocation[3] = gl.getUniformLocation(prg, 'cDir');
-  uniLocation[4] = gl.getUniformLocation(prg, 'cPos');
+  uniLocation[1] = gl.getUniformLocation(prg, 'resolution');
+  uniLocation[2] = gl.getUniformLocation(prg, 'cDir');
+  uniLocation[3] = gl.getUniformLocation(prg, 'cPos');
 
   vAttLocation[0] = gl.getAttribLocation(prg, 'position');
   attStride[0] = 3;
@@ -107,7 +118,7 @@ window.onload = function(){
   
   // その他の初期化
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  startTimeary[0] = new Date().getTime();
+  startTime = new Date().getTime();
   
   // レンダリング
   render();
@@ -117,45 +128,45 @@ function render(){
   if (run === false) {
     return;
   }
+  let moment = (new Date().getTime() - timenow)/1000;
+  timenow = new Date().getTime();
   //WASDによる移動操作
   if(keyW.pressed){
-    cPos = cPos.add(cDir.scale(0.005*cPos.norm));
+    cPos = cPos.add(cDir.scale(5*moment));
   }
   if(keyS.pressed){
-    cPos = cPos.add(cDir.scale(-0.005*cPos.norm));
+    cPos = cPos.add(cDir.scale(-5*moment));
   }
   if(keyA.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(-0.001*cPos.norm));
+    cPos = cPos.add(xaxes.scale(-moment));
   }
   if(keyD.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
-    cPos = cPos.add(xaxes.scale(0.001*cPos.norm));
+    cPos = cPos.add(xaxes.scale(moment));
   }
   if(keyQ.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(0.001*cPos.norm));
+    cPos = cPos.add(yaxes.scale(moment));
   }
   if(keyE.pressed){
     let xaxes=cDir.cross(Quatarnion.vec(0,0,1));
     let yaxes=xaxes.cross(cDir);
-    cPos = cPos.add(yaxes.scale(-0.001*cPos.norm));
+    cPos = cPos.add(yaxes.scale(-moment));
   }
 
   window.requestAnimationFrame(render, c);
   // 時間管理
-  timenow = new Date().getTime();
   
   // カラーバッファをクリア
   gl.clear(gl.COLOR_BUFFER_BIT);
   
   // uniform 関連
-  gl.uniform1f(uniLocation[0], (timenow - startTimeary[0] + tempTimeary[0]) * 0.001);
-  gl.uniform2fv(uniLocation[1], [0, 0]);
-  gl.uniform2fv(uniLocation[2], [cw, ch]);
-  gl.uniform3fv(uniLocation[3], cDir.tovec());
-  gl.uniform3fv(uniLocation[4], cPos.tovec());
+  gl.uniform1f(uniLocation[0], (timenow - startTime + tempTime) * 0.001);
+  gl.uniform2fv(uniLocation[1], [cw, ch]);
+  gl.uniform3fv(uniLocation[2], cDir.tovec());
+  gl.uniform3fv(uniLocation[3], cPos.tovec());
 
   // 描画
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -268,10 +279,10 @@ function checkChange(e) {
   run = e.currentTarget.checked;
   console.log(run);
   if(run){
-    startTimeary[0] = new Date().getTime();
+    startTime = new Date().getTime();
     render();
   }else{
-    tempTimeary[0] += timenow - startTimeary[0]
+    tempTime += timenow - startTime;
   }
 };
 
