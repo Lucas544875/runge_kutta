@@ -74,7 +74,7 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct pseudoKleinian = dfstruct(Keinian(z),0);
+  dfstruct pseudoKleinian = dfstruct(shiftKeinian(z),0);
   dfstruct plane = dfstruct(plane1(z),0);
   dfstruct df = dfmax(pseudoKleinian,plane);
   return df;
