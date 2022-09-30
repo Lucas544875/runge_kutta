@@ -111,8 +111,8 @@ void growFunc(inout rayobj ray){//グロー
   ray.fragColor += grow;
 }
 
-const float minRadius = 60.0;
-const float maxRadius = 80.0;
+const float minRadius = 0.0;
+const float maxRadius = 20.0;
 void fogFunc(inout rayobj ray){//霧
   rayobj ray2 = ray;
   ray2.material = SAIHATE;

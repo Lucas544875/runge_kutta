@@ -19,7 +19,7 @@ float floor1(vec3 z){//plane
 }
 
 float plane1(vec3 z){//plane
-  return plane(z,normalize(vec3(-1.0,0.0,0.0)),0.5);
+  return plane(z,normalize(vec3(0.0,0.0,1.0)),0.5);
 }
 
 void sphereFold(inout vec3 z, inout float dz) {
@@ -92,7 +92,7 @@ float mengerSponge(vec3 p) {
 
 float pseudoKleinian(vec3 p) {
 	vec3 csize = vec3(0.90756, 0.92436, 0.90756);
-	float size = 1.0 ;
+	float size = 1.2;
 	vec3 c = vec3(0.0);
 	float defactor = 1.0;
 	vec3 ap = p + 1.0;
