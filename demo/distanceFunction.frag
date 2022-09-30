@@ -92,10 +92,9 @@ float mengerSponge(vec3 p) {
 
 float pseudoKleinian(vec3 p) {
 	vec3 csize = vec3(0.90756, 0.92436, 0.90756);
-	float size = 1.0;
+	float size = 1.0 ;
 	vec3 c = vec3(0.0);
 	float defactor = 1.0;
-	vec3 offset = vec3(0.0);
 	vec3 ap = p + 1.0;
 	for (int i = 0; i < 10; i++) {
 		ap = p;
@@ -106,7 +105,11 @@ float pseudoKleinian(vec3 p) {
 		defactor *= k;
 		p += c;
 	}
-	float r = abs(0.5 * abs(p.z - offset.z) / defactor);
+	float r = abs(0.5 * p.z / defactor);
 	return r;
+}
+float shiftKeinian(vec3 p){
+	vec3 o = vec3(11.0,-1.0,-1.0);
+	return pseudoKleinian(p - o);
 }
 `
