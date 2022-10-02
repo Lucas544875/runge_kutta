@@ -20,12 +20,36 @@ canvas{
 	justify-content: center;
 	align-items: center;
 	position: relative;
-	width: 300px;
-	height: 60px;
+	width: 500px;
+	height: 150px;
 	color: #333;
-	font-size: 18px;
+	font-size: 25px;
 	font-weight: 700;
 	text-decoration: none;
 	cursor: pointer;
-	margin: 25pt auto;
+	margin: 10pt auto;
+
+	background-size: 50% auto;
+	background-position: 100% 0%;
+	background-repeat: no-repeat;
+}
+.link:hover{
+	animation-name: transition;
+}
+@keyframes transition {
+	from{
+
+	}
+	to{
+		
+	}
+}
+#meltDown:hover{
+	background-image: url(imgs/meltdown.png);
+}
+#tofu:hover{
+	background-image: url(imgs/tofu.png);
+}
+#babbel:hover{
+	background-image: url(imgs/babbel.png);
 }
