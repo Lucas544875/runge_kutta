@@ -39,15 +39,15 @@ struct effectConfig{
 };
 
 const effectConfig effect = effectConfig(
-  true, //反射
-  false,  //アンビエント
-  true, //ハイライト(鏡面反射)
+  false, //反射
+  true,  //アンビエント
+  false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
-  true,  //ソフトシャドウ
+  false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  true,  //霧
+  false,  //霧
   true   //ガンマ補正
 );
 
@@ -74,9 +74,7 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct pseudoKleinian = dfstruct(shiftKeinian(z),0);
-  dfstruct plane = dfstruct(plane1(z),0);
-  dfstruct df = dfmax(pseudoKleinian,plane);
+  dfstruct df = dfstruct(mandelBox(z),0);
   return df;
 }
 `

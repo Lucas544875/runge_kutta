@@ -8,6 +8,7 @@ const int MANDEL = 4;
 const int BROWN = 5;
 const int NORMAL = 6;
 const int METAL = 7;
+const int KADO = 8;
 const int LESSSTEP = 97;
 const int DEBUG = 98;
 const int ERROR = 99;
@@ -15,7 +16,7 @@ const int ERROR = 99;
 //マテリアルの設定
 int materialOf(int objectID){
   if (objectID == 0){
-    return METAL;
+    return KADO;
   }else if (objectID == 1){
     return WHITE;
   }else if (objectID == 98){
@@ -62,16 +63,16 @@ vec3 color(rayobj ray){
     return debugCol(ray.rPos);
   }else if (ray.material == MANDEL){
     return kadoCol(ray.rPos);
-  }else if (ray.material == LESSSTEP){
-    return vec3(0.192);
   }else if (ray.material == BROWN){
     return vec3(0.454, 0.301, 0.211);
   }else if (ray.material == NORMAL){
     return normalCol(ray.rPos);
   }else if (ray.material == METAL){
     return vec3(0.7);
-  }else if (ray.material == SAIHATE){
-    return vec3(1.000, 0, 0);
+  }else if (ray.material == KADO){
+    return kadoCol(ray.rPos);
+  }else if (ray.material == SAIHATE || ray.material == LESSSTEP){
+    return vec3(1.0);
     //return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);
