@@ -4,6 +4,7 @@
   background-color: #222222;
   color :aliceblue;
 }
+
 canvas{
   border: 1px solid black;
 }
@@ -12,44 +13,4 @@ canvas{
 }
 #downloadlink{
   display:none;
-}
-
-.link{
-  background-color: aliceblue;
-  display: flex;
-	justify-content: center;
-	align-items: center;
-	position: relative;
-	width: 500px;
-	height: 150px;
-	color: #333;
-	font-size: 25px;
-	font-weight: 700;
-	text-decoration: none;
-	cursor: pointer;
-	margin: 10pt auto;
-
-	background-size: 50% auto;
-	background-position: 100% 0%;
-	background-repeat: no-repeat;
-}
-.link:hover{
-	animation-name: transition;
-}
-@keyframes transition {
-	from{
-
-	}
-	to{
-		
-	}
-}
-#meltDown:hover{
-	background-image: url(imgs/meltdown.png);
-}
-#tofu:hover{
-	background-image: url(imgs/tofu.png);
-}
-#babbel:hover{
-	background-image: url(imgs/babbel.png);
 }
