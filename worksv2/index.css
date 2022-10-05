@@ -1,24 +1,43 @@
-*{
+body{
   text-align: center;
-  margin: 10px auto;
+	display: flex;
   background-color: #222222;
+	height: 100vh;
+	margin: 0%;
+}
+
+h1{
+  color :aliceblue;
+}
+h2{
+  color :aliceblue;
+}
+p{
   color :aliceblue;
 }
 
-body{
-  display: flex;
-}
-
 .leftWrapper{
+	box-sizing: border-box;
+	padding: 8px;
   width: 40%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .rightWrapper{
+	box-sizing: border-box;
+	padding: 8px;
   width: 60%;
-  height: 100%;
+  height: 100;
+	overflow-y: scroll;
+	-ms-overflow-style: none;    /* IE, Edge 対応 */
+	scrollbar-width: none;       /* Firefox 対応 */
+}
+
+.rightWrapper::-webkit-scrollbar {
+	display:none;
 }
 
 .work{
@@ -27,8 +46,8 @@ body{
 	justify-content: center;
 	align-items: center;
 	position: relative;
-	width: 500px;
-	height: 150px;
+	width: 400px;
+	height: 400px;
 	color: #333;
 	font-size: 25px;
 	font-weight: 700;
@@ -36,28 +55,43 @@ body{
 	cursor: pointer;
 	margin: 10pt auto;
 
-	background-size: 50% auto;
-	background-position: 100% 0%;
+	background-size: 100% auto;
 	background-repeat: no-repeat;
+	
+	background-size: cover;
+	z-index: 0;
+  text-align: center;
+	margin-top: 30px;
+}
+.work::before{
+	transition: 0.1s;
+	content: "";
+  display: block;
+  position: absolute;
+  background: inherit;
+	filter:grayscale(90%) blur(5px);
+  top: -5px;
+  right: -5px;
+  bottom: -5px;
+  left: -5px;
+  z-index: -1;
 }
 
-.link:hover{
-	animation-name: transition;
-}
-@keyframes transition {
-	from{
-
-	}
-	to{
-		
-	}
-}
-#meltDown:hover{
+#meltDown{
 	background-image: url(imgs/meltdown.png);
 }
-#tofu:hover{
+#tofu{
 	background-image: url(imgs/tofu.png);
 }
-#babbel:hover{
+#babbel{
 	background-image: url(imgs/babbel.png);
+}
+
+.work:hover:before{
+	filter: none;
+}
+
+.discription{
+  color :aliceblue;
+	background-color: rgba(0, 0, 0, 0.0);
 }
