@@ -46,7 +46,7 @@ const effectConfig effect = effectConfig(
   false,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
-  false, //グロー
+  true, //グロー
   true,  //霧
   true   //ガンマ補正
 );
@@ -90,26 +90,80 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
   }
 }
 
-float sphere2(vec3 z){
-  vec3 center = vec3(1.5+sin(time),1.5+cos(time),0.0);
-  return sphere(z,center,0.4);
+const vec3 center =vec3(0,0,-1.0);
+float motherSphere(vec3 z){
+  return sphere(z, center, 1.0);
+}
+
+const vec3 n1 = normalize(vec3( 1.0 , 1.0,2.0));
+const vec3 n2 = normalize(vec3( 1.0 , 0.0,2.0));
+const vec3 n3 = normalize(vec3( 1.0 ,-1.0,2.0));
+const vec3 n4 = normalize(vec3( 0.0 , 1.0,2.0));
+const vec3 n5 = normalize(vec3( 0.01, 0.0,2.0));
+const vec3 n6 = normalize(vec3( 0.0 ,-1.0,2.0));
+const vec3 n7 = normalize(vec3(-1.0 , 1.0,2.0));
+const vec3 n8 = normalize(vec3(-1.0 , 0.0,2.0));
+const vec3 n9 = normalize(vec3(-1.0 ,-1.0,2.0));
+
+vec3 orbit(vec3 n, float theta){
+  return turn(vec4(0,normalize(cross(n,vec3(0,0,1)))),rotation(theta,n)).yzw;
 }
 
 float sphere1(vec3 z){
-  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
-  return sphere(p, vec3(1.5,1.5,-1.0), 0.8);
+  return sphere(z,center + (pow(sin(time),2.0) +1.0)/1.5*orbit(n1, 3.0*time), 0.4);
+}
+float sphere2(vec3 z){
+  return sphere(z,center + (pow(sin(2.0*time),2.0) +1.0)/1.5*orbit(n2, 2.0*time+PI), 0.4);
+}
+float sphere3(vec3 z){
+  return sphere(z,center + (pow(sin(3.0*time),2.0) +1.0)/1.5*orbit(n3, 1.0*time), 0.4);
+}
+float sphere4(vec3 z){
+  return sphere(z,center + (pow(sin(4.0*time),2.0) +1.0)/1.5*orbit(n4, 0.5*time+PI), 0.4);
+}
+float sphere5(vec3 z){
+  return sphere(z,center + (pow(sin(4.0*time+PI/2.0),2.0) +1.0)/1.5*orbit(n5, 3.0*time), 0.4);
+}
+float sphere6(vec3 z){
+  return sphere(z,center + (pow(sin(time+PI/2.0),2.0) +1.0)/1.5*orbit(n6, 2.0*time), 0.4);
+}
+float sphere7(vec3 z){
+  return sphere(z,center + (pow(sin(2.0*time+PI/2.0),2.0) +1.0)/1.5*orbit(n7, 1.0*time+PI), 0.4);
+}
+float sphere8(vec3 z){
+  return sphere(z,center + (pow(sin(3.0*time+PI/2.0),2.0) +1.0)/1.5*orbit(n8, 3.0*time), 0.4);
+}
+float sphere9(vec3 z){
+  return sphere(z,center + (pow(sin(4.0*time+PI/2.0),2.0) +1.0)/1.5*orbit(n9, 2.0*time+PI), 0.4);
 }
 
 float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0), -1.8);
+  return plane(z,vec3(0.0,0.0,1.0), -2.1);
 }
 
 dfstruct distanceFunction(vec3 z){
   dfstruct floor1 = dfstruct(floor1(z),0);
+  dfstruct motherSphere = dfstruct(motherSphere(z),1);
   dfstruct sphere1 = dfstruct(sphere1(z),1);
-  dfstruct sphere2 = dfstruct(sphere2(z),2);
+  dfstruct sphere2 = dfstruct(sphere2(z),1);
+  dfstruct sphere3 = dfstruct(sphere3(z),1);
+  dfstruct sphere4 = dfstruct(sphere4(z),1);
+  dfstruct sphere5 = dfstruct(sphere5(z),1);
+  dfstruct sphere6 = dfstruct(sphere6(z),1);
+  dfstruct sphere7 = dfstruct(sphere7(z),1);
+  dfstruct sphere8 = dfstruct(sphere8(z),1);
+  dfstruct sphere9 = dfstruct(sphere9(z),1);
 
-  dfstruct objects = dfmeta(sphere1,sphere2,1.0);
+  dfstruct objects = motherSphere;
+  objects = dfmeta(objects,sphere1,5.0);
+  objects = dfmeta(objects,sphere2,5.0);
+  objects = dfmeta(objects,sphere3,5.0);
+  objects = dfmeta(objects,sphere4,5.0);
+  objects = dfmeta(objects,sphere5,5.0);
+  objects = dfmeta(objects,sphere6,5.0);
+  objects = dfmeta(objects,sphere7,5.0);
+  objects = dfmeta(objects,sphere8,5.0);
+  objects = dfmeta(objects,sphere9,5.0);
   dfstruct df = dfmin(objects,floor1);
   return df;
 }
