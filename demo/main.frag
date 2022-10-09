@@ -59,14 +59,19 @@ struct dfstruct{
 let fs_main1 =`
 
 dfstruct dfmeta(dfstruct df1, dfstruct df2,float k){ //メタボール風の結合
+  float distmin, distmax;
   int id;
   if (df1.dist < df2.dist){
+    distmin = df1.dist;
+    distmax = df2.dist;
     id = df1.id;
   }else{
+    distmin = df2.dist;
+    distmax = df1.dist;
     id = df2.id;
   }
-  float h = exp(-k * df1.dist) + exp(-k * df2.dist);
-  return dfstruct(-log(h) / k,id);
+  float h = 1.0 + exp(-k *(distmax-distmin));
+  return dfstruct(distmin -log(h) / k, id);
 }
 
 dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
