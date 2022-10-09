@@ -58,11 +58,16 @@ struct dfstruct{
 `
 let fs_main1 =`
 
-dfstruct dfmeta(dfstruct df1, dfstruct df2){ //メタボール風の結合
-  float mindist =(df1.dist + df2.dist - abs (df1.dist - df2.dist))/2.0;
-  float maxdist = df1.dist + df2.dist - mindist;
-  return dfstruct(mindist*(exp(mindist-maxdist)+1.0)/exp(mindist),df1.id);
-} 
+dfstruct dfmeta(dfstruct df1, dfstruct df2,float k){ //メタボール風の結合
+  int id;
+  if (df1.dist < df2.dist){
+    id = df1.id;
+  }else{
+    id = df2.id;
+  }
+  float h = exp(-k * df1.dist) + exp(-k * df2.dist);
+  return dfstruct(-log(h) / k,id);
+}
 
 dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
   if (df1.dist < df2.dist){
@@ -81,7 +86,8 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
 }
 
 float sphere2(vec3 z){
-  return sphere(z,vec3(1.5,1.5,0.0),0.8);
+  vec3 center = vec3(1.5+sin(time),1.5+cos(time),0.0);
+  return sphere(z,center,0.4);
 }
 
 float sphere1(vec3 z){
@@ -97,7 +103,9 @@ dfstruct distanceFunction(vec3 z){
   dfstruct floor1 = dfstruct(floor1(z),0);
   dfstruct sphere1 = dfstruct(sphere1(z),1);
   dfstruct sphere2 = dfstruct(sphere2(z),2);
-  dfstruct df = dfmeta(dfmin(floor1,sphere1),sphere2);
+
+  dfstruct objects = dfmeta(sphere1,sphere2,1.0);
+  dfstruct df = dfmin(objects,floor1);
   return df;
 }
 `
