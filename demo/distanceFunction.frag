@@ -5,17 +5,9 @@ float sphere(vec3 z,vec3 center,float radius){
   return length(z-center)-radius;
 }
 
-float sphere1(vec3 z){
-  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
-  return sphere(p, vec3(1.5,1.5,0.0), 0.8);
-}
 
 float plane(vec3 z,vec3 normal,float offset){
 	return dot(z,normalize(normal)) - offset;
-}
-
-float floor1(vec3 z){//plane
-  return plane(z,vec3(0.0,0.0,1.0), -0.8);
 }
 
 float plane1(vec3 z){//plane

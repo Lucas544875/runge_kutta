@@ -16,8 +16,10 @@ const int ERROR = 99;
 //マテリアルの設定
 int materialOf(int objectID){
   if (objectID == 0){
-    return KADO;
+    return GRID;
   }else if (objectID == 1){
+    return NORMAL;
+  }else if (objectID == 2){
     return WHITE;
   }else if (objectID == 98){
     return SAIHATE;
@@ -72,7 +74,7 @@ vec3 color(rayobj ray){
   }else if (ray.material == KADO){
     return kadoCol(ray.rPos);
   }else if (ray.material == SAIHATE || ray.material == LESSSTEP){
-    return vec3(1.0);
+    return vec3(0.0);
     //return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);

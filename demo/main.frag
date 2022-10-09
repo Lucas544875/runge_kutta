@@ -41,13 +41,13 @@ struct effectConfig{
 const effectConfig effect = effectConfig(
   false, //反射
   true,  //アンビエント
-  false, //ハイライト(鏡面反射)
+  true, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
   false,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  false,  //霧
+  true,  //霧
   true   //ガンマ補正
 );
 
@@ -57,6 +57,13 @@ struct dfstruct{
 };
 `
 let fs_main1 =`
+
+dfstruct dfmeta(dfstruct df1, dfstruct df2){ //メタボール風の結合
+  float mindist =(df1.dist + df2.dist - abs (df1.dist - df2.dist))/2.0;
+  float maxdist = df1.dist + df2.dist - mindist;
+  return dfstruct(mindist*(exp(mindist-maxdist)+1.0)/exp(mindist),df1.id);
+} 
+
 dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
   if (df1.dist < df2.dist){
     return df2;
@@ -73,8 +80,24 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
   }
 }
 
+float sphere2(vec3 z){
+  return sphere(z,vec3(1.5,1.5,0.0),0.8);
+}
+
+float sphere1(vec3 z){
+  vec3 p = vec3(mod(z.x,3.0),mod(z.y,3.0),z.z);
+  return sphere(p, vec3(1.5,1.5,-1.0), 0.8);
+}
+
+float floor1(vec3 z){//plane
+  return plane(z,vec3(0.0,0.0,1.0), -1.8);
+}
+
 dfstruct distanceFunction(vec3 z){
-  dfstruct df = dfstruct(mandelBox(z),0);
+  dfstruct floor1 = dfstruct(floor1(z),0);
+  dfstruct sphere1 = dfstruct(sphere1(z),1);
+  dfstruct sphere2 = dfstruct(sphere2(z),2);
+  dfstruct df = dfmeta(dfmin(floor1,sphere1),sphere2);
   return df;
 }
 `
