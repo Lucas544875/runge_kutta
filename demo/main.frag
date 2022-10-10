@@ -6,6 +6,7 @@ uniform vec3  cDir;
 uniform vec3  cPos;
 
 const float PI = 3.14159265;
+const float PI2 = PI*2.0;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
@@ -90,8 +91,17 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
   }
 }
 
+vec3 pmod(vec3 z, vec3 centor, vec3 direction, int n, float section){
+  vec3 cz = z - centor;
+  vec3 axes = cross(direction,vec3(0,0,1));
+  float theta = angle(axes,cz) + section;
+  float shift = floor(theta*float(n)/PI2)*PI2/float(n);
+  return turn(cz,direction,shift)+centor;
+}
+
 dfstruct distanceFunction(vec3 z){
-  dfstruct df = dfstruct(kado(z),0);
+  vec3 pz = pmod(z,vec3(0),vec3(1,0,0),3,0.0 +time);
+  dfstruct df = dfstruct(mengerSponge(pz),0);
   return df;
 }
 `
