@@ -31,7 +31,7 @@ int materialOf(int objectID){
 }
 
 vec3 normal(vec3 p){
-  float d = 0.001;
+  float d = 0.005;
   return normalize(vec3(
     distanceFunction(p + vec3(  d, 0.0, 0.0)).dist - distanceFunction(p + vec3( -d, 0.0, 0.0)).dist,
     distanceFunction(p + vec3(0.0,   d, 0.0)).dist - distanceFunction(p + vec3(0.0,  -d, 0.0)).dist,
