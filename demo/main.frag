@@ -91,12 +91,20 @@ dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
   }
 }
 
+vec2 pmod2d(vec2 p, float r,float section) {
+  float a = atan(p.x, p.y) + PI/r+section;
+  float n = PI2 / r;
+  a = floor(a/n)*n ;
+  return p*rot(-a);
+}
+
 vec3 pmod(vec3 z, vec3 center, vec3 direction, int n, float section){
   vec3 cz = z - center;
-  vec3 axes = cross(direction,vec3(0,0,1));
-  float theta = angle(axes,cz) + section;
-  float shift = floor(theta*float(n)/PI2)*PI2/float(n);
-  return turn(cz,direction,shift)+center;
+  vec3 pole = cross(vec3(0,0,1),direction);
+  float theta = angle(vec3(0,0,1),direction);
+  vec3 tz = turn(cz,pole,-theta);
+  vec3 zz = vec3(pmod2d(tz.xy,float(n),section),tz.z);
+  return turn(zz,pole,theta) + center;
 }
 
 vec3 bugmod(vec3 z, vec3 center, vec3 direction, int n, float section){
@@ -108,7 +116,7 @@ vec3 bugmod(vec3 z, vec3 center, vec3 direction, int n, float section){
 }
 
 dfstruct distanceFunction(vec3 z){
-  vec3 pz = bugmod(z,vec3(0),vec3(1,0,0),3,0.0 +time);
+  vec3 pz = pmod(z,vec3(0,-1,0),vec3(1,0,0),3,time);
   dfstruct df = dfstruct(mengerSponge(pz),0);
   return df;
 }

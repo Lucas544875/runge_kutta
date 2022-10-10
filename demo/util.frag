@@ -23,4 +23,9 @@ vec3 Hadamard(vec3 v,vec3 w){ //アダマール積
 vec3 gammainv(vec3 p){
   return pow(p,vec3(1.0/2.2));
 }
+
+mat2 rot(float a) {
+  float c = cos(a), s = sin(a);
+  return mat2(c,s,-s,c);
+}
 `
