@@ -14,9 +14,7 @@ float plane1(vec3 z){//plane
   return plane(z,normalize(vec3(0.0,0.0,1.0)),0.5);
 }
 
-void sphereFold(inout vec3 z, inout float dz) {
-  float minRadius2=0.60;//定数
-  float fixedRadius2=2.65;//定数
+void sphereFold(inout vec3 z, inout float dz, float minRadius2, float fixedRadius2) {
 	float r2 = dot(z,z);
 	if (r2<minRadius2) { 
 		// linear inner scaling
@@ -31,23 +29,35 @@ void sphereFold(inout vec3 z, inout float dz) {
 	}
 }
 
-void boxFold(inout vec3 z, inout float dz) {
-  float foldingLimit=0.6;//定数
+void boxFold(inout vec3 z, inout float dz, float foldingLimit) {
 	z = clamp(z, -foldingLimit, foldingLimit) * 2.0 - z;
 }
 
-float mandelBox(vec3 z){
-  float Scale = 1.9 ;//定数
+float mandelBox(vec3 z, float Scale, float foldingLimit, float minRadius2, float fixedRadius2){
 	vec3 offset = z;
 	float dr = 1.0;
 	for (int n = 0; n < 16; n++) {
-		boxFold(z,dr);       // Reflect
-		sphereFold(z,dr);    // Sphere Inversion
+		boxFold(z,dr,foldingLimit);       // Reflect
+		sphereFold(z,dr,minRadius2,fixedRadius2);    // Sphere Inversion
     z=Scale*z + offset;  // Scale & Translate
     dr = dr*abs(Scale)+1.0;
 	}
 	float r = length(z);
 	return r/abs(dr);
+}
+float tofu(vec3 z){
+  float Scale = 1.9 ;//定数
+  float foldingLimit=0.6;//定数
+	float minRadius2=0.60;//定数
+  float fixedRadius2=2.65;//定数
+	return mandelBox(z, Scale, foldingLimit, minRadius2, fixedRadius2);
+}
+float kado(vec3 z){
+  float Scale = -2.18 ;//定数
+  float foldingLimit=1.14;//定数
+	float minRadius2=0.60;//定数
+  float fixedRadius2=2.65;//定数
+	return mandelBox(z, Scale, foldingLimit, minRadius2, fixedRadius2);
 }
 
 float sdCross(vec3 p, float c) {

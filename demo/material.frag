@@ -16,7 +16,7 @@ const int ERROR = 99;
 //マテリアルの設定
 int materialOf(int objectID){
   if (objectID == 0){
-    return GRID;
+    return KADO;
   }else if (objectID == 1){
     return NORMAL;
   }else if (objectID == 2){
