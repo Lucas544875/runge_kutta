@@ -41,7 +41,7 @@ struct effectConfig{
 const effectConfig effect = effectConfig(
   false, //反射
   true,  //アンビエント
-  true, //ハイライト(鏡面反射)
+  false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
   false,  //ソフトシャドウ

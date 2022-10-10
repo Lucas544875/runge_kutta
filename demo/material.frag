@@ -31,7 +31,7 @@ int materialOf(int objectID){
 }
 
 vec3 normal(vec3 p){
-  float d = 0.0001;
+  float d = 0.001;
   return normalize(vec3(
     distanceFunction(p + vec3(  d, 0.0, 0.0)).dist - distanceFunction(p + vec3( -d, 0.0, 0.0)).dist,
     distanceFunction(p + vec3(0.0,   d, 0.0)).dist - distanceFunction(p + vec3(0.0,  -d, 0.0)).dist,
@@ -49,7 +49,10 @@ vec3 debugCol(vec3 rPos){
 }
 
 vec3 kadoCol(vec3 rPos){
-  return normal(rPos)*0.66 + vec3(0.33);
+  float k = dot (rPos,vec3(0,1,1))/8.0 +0.5;
+  vec3 col1 = gammainv(vec3(0.007, 0.313, 0.772));
+  vec3 col2 = gammainv(vec3(0.831, 0.247, 0.552));
+  return mix(col1,col2,k);
 }
 
 vec3 normalCol(vec3 rPos){
@@ -74,7 +77,7 @@ vec3 color(rayobj ray){
   }else if (ray.material == KADO){
     return kadoCol(ray.rPos);
   }else if (ray.material == SAIHATE || ray.material == LESSSTEP){
-    return vec3(0.0);
+    return vec3(1.0);
     //return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);

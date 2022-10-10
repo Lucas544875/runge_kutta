@@ -105,7 +105,7 @@ void lessStepFunc(inout rayobj ray){
 
 const float growIntencity = 1.0;
 void growFunc(inout rayobj ray){//グロー
-  float coef = smoothstep(0.0,0.5,ray.iterate);
+  float coef = smoothstep(0.0,1.0,ray.iterate);
   const vec3 growCol = vec3(1.0);
   vec3 grow = growIntencity * coef * growCol;
   ray.fragColor += grow;

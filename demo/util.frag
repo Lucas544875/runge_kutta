@@ -19,4 +19,8 @@ vec3 Hadamard(vec3 v,vec3 w){ //アダマール積
     v.z * w.z
   );
 }
+
+vec3 gammainv(vec3 p){
+  return pow(p,vec3(1.0/2.2));
+}
 `
