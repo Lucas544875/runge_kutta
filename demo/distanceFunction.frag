@@ -76,7 +76,7 @@ float sdBox(vec3 p, vec3 b) {
 float _mengerSponge(vec3 p, float scale, float width) {
 	float d = sdBox(p, vec3(1.0));
 	float s = 1.0;
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		vec3 a = mod(p * s, 2.0) - 1.0;
 		s *= scale;
 		vec3 r = 1.0 - scale * abs(a);
@@ -113,5 +113,25 @@ float pseudoKleinian(vec3 p) {
 float shiftKeinian(vec3 p){
 	vec3 o = vec3(11.0,-1.0,-1.0);
 	return pseudoKleinian(p - o);
+}
+
+float gasket(vec3 z){
+	const float isq3 = inversesqrt(3.0);
+	vec3 a1 = vec3(0,0,3.0/2.0);
+	vec3 a2 = vec3(0,1,0);
+	vec3 a3 = vec3(2.0/3.0*isq3,-1.0/3.0*isq3,0);
+	vec3 a4 = vec3(-2.0/3.0*isq3,-1.0/3.0*isq3,0);
+	vec3 c;
+	float dist, d;
+  float Scale=2.0;
+  const int ite=50;
+	for (int i=0;i < ite;i++) {
+    c = a1; dist = length(z-a1);
+    d = length(z-a2); if (d < dist) { c = a2; dist=d; }
+    d = length(z-a3); if (d < dist) { c = a3; dist=d; }
+    d = length(z-a4); if (d < dist) { c = a4; dist=d; }
+    z = Scale*z-c*(Scale-1.0);
+	}
+	return length(z) * pow(Scale, float(-ite));
 }
 `

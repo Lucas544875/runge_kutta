@@ -107,7 +107,7 @@ vec3 pmod(vec3 z, vec3 center, vec3 direction, int n, float section){
   return turn(zz,pole,theta) + center;
 }
 
-vec3 bugmod(vec3 z, vec3 center, vec3 direction, int n, float section){
+vec3 wipe(vec3 z, vec3 center, vec3 direction, int n, float section){//結局よくわからん
   vec3 cz = z - center;
   vec3 axes = cross(direction,vec3(0,0,1));
   float theta = angle(axes,cz) + section;
@@ -116,8 +116,7 @@ vec3 bugmod(vec3 z, vec3 center, vec3 direction, int n, float section){
 }
 
 dfstruct distanceFunction(vec3 z){
-  vec3 pz = pmod(z,vec3(0,-1,0),vec3(1,0,0),3,time);
-  dfstruct df = dfstruct(mengerSponge(pz),0);
+  dfstruct df = dfstruct(gasket(z + vec3(-5,0,0)),0);
   return df;
 }
 `
