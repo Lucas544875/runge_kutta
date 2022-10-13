@@ -23,6 +23,34 @@ void raymarch(inout rayobj ray){
   ray.iterate = 1.0;
 }
 
+void trick(inout rayobj ray){
+  rayobj probe = ray;
+  const float overstep = 1.5;
+  probe.rPos += overstep * probe.direction;
+  probe.len += overstep;
+
+  for(int i = 0; i < Iteration; i++){
+    dfstruct df = depthFunction(probe.rPos);
+    probe.distance = df.dist;
+    if(probe.distance<0.0){
+      probe.rPos += overstep * probe.direction;
+      probe.len += overstep;
+      continue;
+    }else if(probe.distance < 0.001){
+      probe.normal = normal(probe.rPos);
+      probe.objectID = df.id;
+      probe.iterate = float(i)/float(Iteration);
+      ray = probe;
+      return;
+    }
+    probe.len += probe.distance;
+    if(probe.len > 100.0){
+      return;
+    }
+    probe.rPos += probe.distance * probe.direction;
+  }
+}
+
 //ライティング
 void ambientFunc(inout rayobj ray){//アンビエント
   vec3 baseColor = color(ray);

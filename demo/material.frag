@@ -18,7 +18,7 @@ int materialOf(int objectID){
   if (objectID == 0){
     return KADO;
   }else if (objectID == 1){
-    return NORMAL;
+    return WHITE;
   }else if (objectID == 2){
     return WHITE;
   }else if (objectID == 98){

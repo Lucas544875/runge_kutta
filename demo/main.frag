@@ -45,9 +45,9 @@ const effectConfig effect = effectConfig(
   false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
-  false,  //ソフトシャドウ
+  true,  //ソフトシャドウ
   false, //大域照明
-  true, //グロー
+  false, //グロー
   true,  //霧
   true   //ガンマ補正
 );
@@ -60,18 +60,27 @@ struct dfstruct{
 let fs_main1 =`
 
 float box(vec3 p){
-  p.xy*=rot(time*1.);
-  p.xz*=rot(time*1.);
+  p.xy*=rot(-time*0.25);
+  p.xz*=rot(PI*0.25);
+  p.yz*=rot(PI*0.25);
   p=abs(p);
-  p-=.7;
+  p-=0.7;
   if(p.x<p.y)p.xy=p.yx;
   if(p.x<p.z)p.xz=p.zx;
   if(p.y<p.z)p.yz=p.zy;
-  return length(p.xy)-.1;
+  return max(abs(p.x),abs(p.y)) -0.1;
+}
+float floor1(vec3 z){
+  return plane(z,vec3(0,0,1),-1.4);
 }
 dfstruct distanceFunction(vec3 z){
-  dfstruct df = dfstruct(box(z),0);
-  return df;
+  dfstruct box = dfstruct(box(z),0);
+  dfstruct plane = dfstruct(floor1(z),1);
+  return dfmin(box,plane);
+}
+dfstruct depthFunction(vec3 z){
+  dfstruct box = dfstruct(box(z),0);
+  return box;
 }
 `
 
@@ -88,6 +97,7 @@ void main(void){
   //レイの定義と移動
   rayobj ray = rayobj(cPos,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
+  trick(ray);//錯視
   ray.material = materialOf(ray.objectID);
 
   //エフェクト
