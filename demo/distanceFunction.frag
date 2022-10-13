@@ -134,4 +134,33 @@ float gasket(vec3 z){
 	}
 	return length(z) * pow(Scale, float(-ite));
 }
+
+float lenPtoL(vec3 p,vec3 l, vec3 dir){
+	vec3 z = l-p;
+	vec3 ndir = normalize(dir);
+	vec3 proj = z - dot(ndir,z)*ndir;
+	return length(proj);
+}
+float triangle(vec3 z, vec3 p1, vec3 p2, vec3 p3){
+	vec3 p1z = z-p1;
+	vec3 p1p2 = p2 - p1;
+	vec3 p1p3 = p3 - p1;
+	vec3 p2p3 = p3 - p2;
+	vec3 normal = normalize(cross(p1p2,p1p3));
+	mat3 cmat = mat3(p1p2,p1p3,normal);
+	vec3 c = inverse(cmat)*p1z;
+	if(c.x > 0.0 && c.y > 0.0 && c.x+c.y < 1.0){
+		return abs(dot(normal,p1z));
+	}else if(c.x*c.y>0.0||c.x*(c.x-c.y)){
+		float d1 = lenPtoL(z,p1,p1p2);
+		float d2 = lenPtoL(z,p1,p1p3);
+		float d3 = lenPtoL(z,p2,p2p3);
+		return min(min(d1,d2),d3);
+	}else{
+		float d1 = lenPtoL(z,p1,p1p2);
+		float d2 = lenPtoL(z,p1,p1p3);
+		float d3 = lenPtoL(z,p2,p2p3);
+		return min(min(d1,d2),d3);
+	}
+}
 `

@@ -116,7 +116,10 @@ vec3 wipe(vec3 z, vec3 center, vec3 direction, int n, float section){//結局よ
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct df = dfstruct(gasket(z + vec3(-5,0,0)),0);
+  vec3 p1 = vec3(1,0,0);
+  vec3 p2 = vec3(0,1,0);
+  vec3 p3 = vec3(0,0,1);
+  dfstruct df = dfstruct(triangle(z,p1,p2,p3),0);
   return df;
 }
 `
