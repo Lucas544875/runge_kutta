@@ -1,5 +1,61 @@
 let fs_distanceFunction =`
 
+dfstruct dfmeta(dfstruct df1, dfstruct df2,float k){ //メタボール風の結合
+  float distmin, distmax;
+  int id;
+  if (df1.dist < df2.dist){
+    distmin = df1.dist;
+    distmax = df2.dist;
+    id = df1.id;
+  }else{
+    distmin = df2.dist;
+    distmax = df1.dist;
+    id = df2.id;
+  }
+  float h = 1.0 + exp(-k *(distmax-distmin));
+  return dfstruct(distmin -log(h) / k, id);
+}
+
+dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
+  if (df1.dist < df2.dist){
+    return df2;
+  }else{
+    return df1;
+  }
+}
+
+dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
+  if (df1.dist < df2.dist){
+    return df1;
+  }else{
+    return df2;
+  }
+}
+
+vec2 pmod2d(vec2 p, float r,float section) {
+  float a = atan(p.x, p.y) + PI/r+section;
+  float n = PI2 / r;
+  a = floor(a/n)*n ;
+  return p*rot(-a);
+}
+
+vec3 pmod(vec3 z, vec3 center, vec3 direction, int n, float section){
+  vec3 cz = z - center;
+  vec3 pole = cross(vec3(0,0,1),direction);
+  float theta = angle(vec3(0,0,1),direction);
+  vec3 tz = turn(cz,pole,-theta);
+  vec3 zz = vec3(pmod2d(tz.xy,float(n),section),tz.z);
+  return turn(zz,pole,theta) + center;
+}
+
+vec3 wipe(vec3 z, vec3 center, vec3 direction, int n, float section){//結局よくわからん
+  vec3 cz = z - center;
+  vec3 axes = cross(direction,vec3(0,0,1));
+  float theta = angle(axes,cz) + section;
+  float shift = floor(theta*float(n)/PI2)*PI2/float(n);
+  return turn(cz,direction,shift)+center;
+}
+
 //primitives
 float sphere(vec3 z,vec3 center,float radius){
   return length(z-center)-radius;
@@ -136,10 +192,8 @@ float gasket(vec3 z){
 }
 
 float lenPtoL(vec3 p,vec3 l, vec3 dir){
-	vec3 z = l-p;
 	vec3 ndir = normalize(dir);
-	vec3 proj = z - dot(ndir,z)*ndir;
-	return length(proj);
+	return length(l-p - dot(ndir,l-p)*ndir);
 }
 float triangle(vec3 z, vec3 p1, vec3 p2, vec3 p3){
 	vec3 p1z = z-p1;
@@ -151,16 +205,26 @@ float triangle(vec3 z, vec3 p1, vec3 p2, vec3 p3){
 	vec3 c = inverse(cmat)*p1z;
 	if(c.x > 0.0 && c.y > 0.0 && c.x+c.y < 1.0){
 		return abs(dot(normal,p1z));
-	}else if(c.x*c.y>0.0||c.x*(c.x-c.y)){
-		float d1 = lenPtoL(z,p1,p1p2);
-		float d2 = lenPtoL(z,p1,p1p3);
-		float d3 = lenPtoL(z,p2,p2p3);
-		return min(min(d1,d2),d3);
+	}else if(c.y<0.0 && c.x>0.0 && c.x+c.y<1.0){
+		return lenPtoL(z,p1,p1p2);
+	}else if(c.x<0.0 && c.y>0.0 && c.y+c.x<1.0){
+		return lenPtoL(z,p1,p1p3);
+	}else if(c.x+c.y>1.0 && abs(c.x-c.y)<1.0){
+		return lenPtoL(z,p2,p2p3);
 	}else{
-		float d1 = lenPtoL(z,p1,p1p2);
-		float d2 = lenPtoL(z,p1,p1p3);
-		float d3 = lenPtoL(z,p2,p2p3);
+		float d1 = length(z-p1);
+		float d2 = length(z-p2);
+		float d3 = length(z-p3);
 		return min(min(d1,d2),d3);
 	}
+}
+
+float octahedron(vec3 z){
+  vec3 pz = pmod(z,vec3(0),vec3(1,0,0),2,PI/2.0);
+  vec3 ppz = pmod(pz,vec3(0),vec3(0,0,1),4,-PI/4.0);
+  vec3 p1 = vec3(1,0,0);
+  vec3 p2 = vec3(0,1,0);
+  vec3 p3 = vec3(0,0,1);
+  return triangle(ppz,p1,p2,p3)-0.01;
 }
 `

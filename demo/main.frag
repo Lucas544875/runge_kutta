@@ -58,68 +58,8 @@ struct dfstruct{
 };
 `
 let fs_main1 =`
-
-dfstruct dfmeta(dfstruct df1, dfstruct df2,float k){ //メタボール風の結合
-  float distmin, distmax;
-  int id;
-  if (df1.dist < df2.dist){
-    distmin = df1.dist;
-    distmax = df2.dist;
-    id = df1.id;
-  }else{
-    distmin = df2.dist;
-    distmax = df1.dist;
-    id = df2.id;
-  }
-  float h = 1.0 + exp(-k *(distmax-distmin));
-  return dfstruct(distmin -log(h) / k, id);
-}
-
-dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
-  if (df1.dist < df2.dist){
-    return df2;
-  }else{
-    return df1;
-  }
-}
-
-dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
-  if (df1.dist < df2.dist){
-    return df1;
-  }else{
-    return df2;
-  }
-}
-
-vec2 pmod2d(vec2 p, float r,float section) {
-  float a = atan(p.x, p.y) + PI/r+section;
-  float n = PI2 / r;
-  a = floor(a/n)*n ;
-  return p*rot(-a);
-}
-
-vec3 pmod(vec3 z, vec3 center, vec3 direction, int n, float section){
-  vec3 cz = z - center;
-  vec3 pole = cross(vec3(0,0,1),direction);
-  float theta = angle(vec3(0,0,1),direction);
-  vec3 tz = turn(cz,pole,-theta);
-  vec3 zz = vec3(pmod2d(tz.xy,float(n),section),tz.z);
-  return turn(zz,pole,theta) + center;
-}
-
-vec3 wipe(vec3 z, vec3 center, vec3 direction, int n, float section){//結局よくわからん
-  vec3 cz = z - center;
-  vec3 axes = cross(direction,vec3(0,0,1));
-  float theta = angle(axes,cz) + section;
-  float shift = floor(theta*float(n)/PI2)*PI2/float(n);
-  return turn(cz,direction,shift)+center;
-}
-
 dfstruct distanceFunction(vec3 z){
-  vec3 p1 = vec3(1,0,0);
-  vec3 p2 = vec3(0,1,0);
-  vec3 p3 = vec3(0,0,1);
-  dfstruct df = dfstruct(triangle(z,p1,p2,p3),0);
+  dfstruct df = dfstruct(octahedron(z),0);
   return df;
 }
 `
