@@ -58,8 +58,19 @@ struct dfstruct{
 };
 `
 let fs_main1 =`
+
+float box(vec3 p){
+  p.xy*=rot(time*1.);
+  p.xz*=rot(time*1.);
+  p=abs(p);
+  p-=.7;
+  if(p.x<p.y)p.xy=p.yx;
+  if(p.x<p.z)p.xz=p.zx;
+  if(p.y<p.z)p.yz=p.zy;
+  return length(p.xy)-.1;
+}
 dfstruct distanceFunction(vec3 z){
-  dfstruct df = dfstruct(octahedron(z),0);
+  dfstruct df = dfstruct(box(z),0);
   return df;
 }
 `
