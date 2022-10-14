@@ -64,4 +64,10 @@ mat3 inverse(mat3 matrix) {
 
   return (1.0 / dot(row0, minors0)) * adj;
 }
+vec3 mix3 (vec3 v1, vec3 v2, vec3 v3, float k){
+  float c1 = max(1.0-2.0*k,0.0);
+  float c2 = 1.0-2.0*abs(k-0.5);
+  float c3 = max(2.0*k-1.0,0.0);
+  return c1*v1 + c2*v2 + c3*v3;
+}
 `

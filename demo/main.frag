@@ -10,7 +10,7 @@ const float PI2 = PI*2.0;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(2.0,1.0,3.0));
+const vec3 LightDir = normalize(vec3(2.0,1.0,1.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -61,8 +61,8 @@ let fs_main1 =`
 
 float box(vec3 p){
   p.xy*=rot(-time*0.25);
-  p.xz*=rot(PI*0.25);
-  p.yz*=rot(PI*0.25);
+  p.xz*=rot(PI/2.0-atan(sqrt(3.0),sqrt(2.0)));
+  p.yz*=rot(PI/4.0);
   p=abs(p);
   p-=0.7;
   if(p.x<p.y)p.xy=p.yx;
