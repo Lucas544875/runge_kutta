@@ -227,4 +227,18 @@ float octahedron(vec3 z){
   vec3 p3 = vec3(0,0,1);
   return triangle(ppz,p1,p2,p3)-0.01;
 }
+
+float CappedTorus(vec3 p, float arc, float ra, float rb){
+  vec2 sc = vec2(sin(arc),cos(arc));
+	p.x = abs(p.x);
+	float k = (sc.y*p.x>sc.x*p.y) ? dot(p.xy,sc) : length(p.xy);
+	return sqrt( dot(p,p) + ra*ra - 2.0*ra*k ) - rb;
+}
+
+float edgeTorus(vec3 p, float radius, float width, float height){
+	vec2 v = vec2(length(p.xy),p.z);
+	v = abs(v-vec2(radius,0));
+	return max(v.x - width,v.y-height);
+}
+
 `

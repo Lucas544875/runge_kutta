@@ -23,9 +23,8 @@ void raymarch(inout rayobj ray){
   ray.iterate = 1.0;
 }
 
-void trick(inout rayobj ray){
+void trick(inout rayobj ray,in float overstep){
   rayobj probe = ray;
-  const float overstep = 2.0;
   probe.rPos += overstep * probe.direction;
   probe.len += overstep;
 

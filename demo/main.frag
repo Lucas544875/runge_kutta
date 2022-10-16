@@ -58,31 +58,32 @@ struct dfstruct{
 };
 `
 let fs_main1 =`
-
-float box(vec3 p){
-  p.xy*=rot(3.0/4.0*PI -time*0.05);
-  p.xz*=rot(PI/2.0-atan(sqrt(3.0),sqrt(2.0)));
-  p.yz*=rot(PI/4.0);
-  p=abs(p);
-  p-=1.0;
-  if(p.x<p.y)p.xy=p.yx;
-  if(p.x<p.z)p.xz=p.zx;
-  if(p.y<p.z)p.yz=p.zy;
-  return max(abs(p.x),abs(p.y)) -0.12;
-}
 float floor1(vec3 z){
   return plane(z,vec3(0,0,1),-1.95);
 }
+float gear(vec3 z){
+  float a = edgeTorus(z, 1.0, 0.2,0.1);
+  float b = sdBox(z-vec3(0,1,0), vec3(0.1,0.5,0.1));
+  return min(a,b);
+}
+
 dfstruct distanceFunction(vec3 z){
   z=z +vec3(-2,0,0);
-  dfstruct box = dfstruct(box(z),0);
   dfstruct plane = dfstruct(floor1(z),1);
-  return dfmin(box,plane);
+  dfstruct gear = dfstruct(gear(z),2);
+
+  dfstruct df;
+  df = dfmin(plane,gear);
+  return df;
 }
 dfstruct depthFunction(vec3 z){
   z=z +vec3(-2,0,0);
-  dfstruct box = dfstruct(box(z),0);
-  return box;
+  dfstruct plane = dfstruct(floor1(z),1);
+  dfstruct gear = dfstruct(gear(z),2);
+
+  dfstruct df;
+  df = dfmin(plane,gear);
+  return df;
 }
 `
 
@@ -99,7 +100,7 @@ void main(void){
   //レイの定義と移動
   rayobj ray = rayobj(cPos,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
-  trick(ray);//錯視
+  //trick(ray,2.1);//錯視
   ray.material = materialOf(ray.objectID);
 
   //エフェクト

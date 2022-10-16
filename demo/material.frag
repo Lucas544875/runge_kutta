@@ -19,7 +19,7 @@ int materialOf(int objectID){
   if (objectID == 0){
     return KADO;
   }else if (objectID == 1){
-    return WHITE;
+    return GRID;
   }else if (objectID == 2){
     return WHITE;
   }else if (objectID == 98){
@@ -71,6 +71,8 @@ vec3 color(rayobj ray){
     return kadoCol(ray.rPos);
   }else if (ray.material == BROWN){
     return vec3(0.454, 0.301, 0.211);
+  }else if (ray.material == CYAN){
+    return vec3(0,1,1);
   }else if (ray.material == NORMAL){
     return normalCol(ray.rPos);
   }else if (ray.material == METAL){
