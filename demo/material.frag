@@ -9,6 +9,7 @@ const int BROWN = 5;
 const int NORMAL = 6;
 const int METAL = 7;
 const int KADO = 8;
+const int MAT = 9;
 const int LESSSTEP = 97;
 const int DEBUG = 98;
 const int ERROR = 99;
@@ -76,8 +77,13 @@ vec3 color(rayobj ray){
     return vec3(0.7);
   }else if (ray.material == KADO){
     return kadoCol(ray.rPos);
+  }else if (ray.material == MAT){
+    return vec3(0.960,0.95,0.92);
   }else if (ray.material == SAIHATE || ray.material == LESSSTEP){
-    return vec3(1.0);
+    float k = max(0.0,dot(normalize(ray.direction),vec3(0,0,1)));
+    vec3 c1 = vec3(1.0);
+    vec3 c2 = vec3(0.584, 0.752, 0.925);
+    return mix(c1,c2,smoothstep(0.0,0.5,k));
     //return vec3(160.0,216.0,239.0)/256.0;
   }else{
     return vec3(1.0,0.0,0.0);

@@ -25,7 +25,7 @@ void raymarch(inout rayobj ray){
 
 void trick(inout rayobj ray){
   rayobj probe = ray;
-  const float overstep = 1.5;
+  const float overstep = 2.0;
   probe.rPos += overstep * probe.direction;
   probe.len += overstep;
 

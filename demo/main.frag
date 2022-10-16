@@ -48,7 +48,7 @@ const effectConfig effect = effectConfig(
   true,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  true,  //霧
+  false,  //霧
   true   //ガンマ補正
 );
 
@@ -60,25 +60,27 @@ struct dfstruct{
 let fs_main1 =`
 
 float box(vec3 p){
-  p.xy*=rot(-time*0.25);
+  p.xy*=rot(3.0/4.0*PI -time*0.05);
   p.xz*=rot(PI/2.0-atan(sqrt(3.0),sqrt(2.0)));
   p.yz*=rot(PI/4.0);
   p=abs(p);
-  p-=0.7;
+  p-=1.0;
   if(p.x<p.y)p.xy=p.yx;
   if(p.x<p.z)p.xz=p.zx;
   if(p.y<p.z)p.yz=p.zy;
-  return max(abs(p.x),abs(p.y)) -0.1;
+  return max(abs(p.x),abs(p.y)) -0.12;
 }
 float floor1(vec3 z){
-  return plane(z,vec3(0,0,1),-1.4);
+  return plane(z,vec3(0,0,1),-1.95);
 }
 dfstruct distanceFunction(vec3 z){
+  z=z +vec3(-2,0,0);
   dfstruct box = dfstruct(box(z),0);
   dfstruct plane = dfstruct(floor1(z),1);
   return dfmin(box,plane);
 }
 dfstruct depthFunction(vec3 z){
+  z=z +vec3(-2,0,0);
   dfstruct box = dfstruct(box(z),0);
   return box;
 }
