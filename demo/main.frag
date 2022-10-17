@@ -61,16 +61,16 @@ let fs_main1 =`
 float floor1(vec3 z){
   return plane(z,vec3(0,0,1),-1.95);
 }
-float gear(vec3 z){
-  float a = edgeTorus(z, 1.0, 0.2,0.1);
-  float b = sdBox(z-vec3(0,1,0), vec3(0.1,0.5,0.1));
-  return min(a,b);
+
+float gear1(vec3 z){
+  return gear(z, 1.0, 1.4, 0.2, 10);
 }
 
 dfstruct distanceFunction(vec3 z){
-  z=z +vec3(-2,0,0);
+  z = z +vec3(-2,0,0);
   dfstruct plane = dfstruct(floor1(z),1);
-  dfstruct gear = dfstruct(gear(z),2);
+  z = turn(z,vec3(0,1,0),PI/2.0);
+  dfstruct gear = dfstruct(gear1(z),0);
 
   dfstruct df;
   df = dfmin(plane,gear);
@@ -79,10 +79,10 @@ dfstruct distanceFunction(vec3 z){
 dfstruct depthFunction(vec3 z){
   z=z +vec3(-2,0,0);
   dfstruct plane = dfstruct(floor1(z),1);
-  dfstruct gear = dfstruct(gear(z),2);
+  //dfstruct gear = dfstruct(gear(z),2);
 
   dfstruct df;
-  df = dfmin(plane,gear);
+  //df = dfmin(plane,gear);
   return df;
 }
 `

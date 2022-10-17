@@ -241,4 +241,14 @@ float edgeTorus(vec3 p, float radius, float width, float height){
 	return max(v.x - width,v.y-height);
 }
 
+float gear(vec3 z, float ra, float rb, float thickness, int theeth){
+  z = pmod(z,vec3(0),vec3(0,0,1),theeth,0.0);
+  float radius = (3.0*ra+rb)/4.0;
+  float width = (rb-ra)/4.0;
+  float a = edgeTorus(z, radius, width, thickness);
+  float teeth = 0.1;
+  float b = sdBox(z-vec3(0,(ra+rb)/2.0,0), vec3(teeth,(rb-ra)/2.0,thickness));
+  return min(a,b)-0.01;
+}
+
 `
