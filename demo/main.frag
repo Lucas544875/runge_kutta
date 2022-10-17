@@ -48,7 +48,7 @@ const effectConfig effect = effectConfig(
   true,  //ソフトシャドウ
   false, //大域照明
   false, //グロー
-  false,  //霧
+  true,  //霧
   true   //ガンマ補正
 );
 
@@ -63,17 +63,30 @@ float floor1(vec3 z){
 }
 
 float gear1(vec3 z){
-  return gear(z, 1.0, 1.4, 0.2, 10);
+  z = turn(z,vec3(0,0,1),time);
+  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
 }
-
+float gear2(vec3 z){
+  z = turn(z,vec3(0,1,0),PI/2.0);
+  z = turn(z,vec3(0,0,1),time);
+  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
+}
+float gear3(vec3 z){
+  z = turn(z,vec3(1,0,0),PI/2.0);
+  z = turn(z,vec3(0,0,1),time);
+  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
+}
 dfstruct distanceFunction(vec3 z){
   z = z +vec3(-2,0,0);
   dfstruct plane = dfstruct(floor1(z),1);
-  z = turn(z,vec3(0,1,0),PI/2.0);
-  dfstruct gear = dfstruct(gear1(z),0);
+  dfstruct gear1 = dfstruct(gear1(z),0);
+  dfstruct gear2 = dfstruct(gear2(z),0);
+  dfstruct gear3 = dfstruct(gear3(z),0);
 
   dfstruct df;
-  df = dfmin(plane,gear);
+  df = dfmin(plane,gear1);
+  df = dfmin(df,gear2);
+  df = dfmin(df,gear3);
   return df;
 }
 dfstruct depthFunction(vec3 z){
