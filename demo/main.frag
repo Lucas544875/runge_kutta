@@ -62,31 +62,29 @@ float floor1(vec3 z){
   return plane(z,vec3(0,0,1),-1.95);
 }
 
+const float space = 1.3;
 float gear1(vec3 z){
-  z = turn(z,vec3(0,0,1),time);
-  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
+  z = z- vec3(0,space,0);
+  z = turn(z,vec3(0,1,0),PI/2.0);
+  z = turn(z,vec3(0,0,1),PI/20.0+time);
+  return gear(z, 1.0, 1.4, 0.1, 20, 0.06);
 }
 float gear2(vec3 z){
+  z = z- vec3(0,-space,0);
   z = turn(z,vec3(0,1,0),PI/2.0);
-  z = turn(z,vec3(0,0,1),time);
-  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
+  z = turn(z,vec3(0,0,1),-time);
+  return gear(z, 1.0, 1.4, 0.1, 20, 0.06);
 }
-float gear3(vec3 z){
-  z = turn(z,vec3(1,0,0),PI/2.0);
-  z = turn(z,vec3(0,0,1),time);
-  return gear(z, 1.0, 1.4, 0.1, 10,0.1);
-}
+
 dfstruct distanceFunction(vec3 z){
   z = z +vec3(-2,0,0);
   dfstruct plane = dfstruct(floor1(z),1);
   dfstruct gear1 = dfstruct(gear1(z),0);
   dfstruct gear2 = dfstruct(gear2(z),0);
-  dfstruct gear3 = dfstruct(gear3(z),0);
 
   dfstruct df;
   df = dfmin(plane,gear1);
   df = dfmin(df,gear2);
-  df = dfmin(df,gear3);
   return df;
 }
 dfstruct depthFunction(vec3 z){
