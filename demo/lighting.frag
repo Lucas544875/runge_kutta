@@ -23,6 +23,33 @@ void raymarch(inout rayobj ray){
   ray.iterate = 1.0;
 }
 
+void trick(inout rayobj ray,in float overstep){
+  rayobj probe = ray;
+  probe.rPos += overstep * probe.direction;
+  probe.len += overstep;
+
+  for(int i = 0; i < Iteration; i++){
+    dfstruct df = depthFunction(probe.rPos);
+    probe.distance = df.dist;
+    if(probe.distance<0.0){
+      probe.rPos += overstep * probe.direction;
+      probe.len += overstep;
+      continue;
+    }else if(probe.distance < 0.001){
+      probe.normal = normal(probe.rPos);
+      probe.objectID = df.id;
+      probe.iterate = float(i)/float(Iteration);
+      ray = probe;
+      return;
+    }
+    probe.len += probe.distance;
+    if(probe.len > 100.0){
+      return;
+    }
+    probe.rPos += probe.distance * probe.direction;
+  }
+}
+
 //ライティング
 void ambientFunc(inout rayobj ray){//アンビエント
   vec3 baseColor = color(ray);
@@ -64,7 +91,7 @@ void incandescenceFunc(inout rayobj ray){ //白熱光
 
 }
 
-const float shadowCoef = 0.4;
+const float shadowCoef = 0.7;
 void shadowFunc(inout rayobj ray){
   if (dot(ray.normal, LightDir)<0.0){return;}
   float h = 0.0;
@@ -105,14 +132,14 @@ void lessStepFunc(inout rayobj ray){
 
 const float growIntencity = 1.0;
 void growFunc(inout rayobj ray){//グロー
-  float coef = smoothstep(0.0,0.95,ray.iterate);
-  const vec3 growCol = vec3(1.000, 0.501, 0.200);
+  float coef = smoothstep(0.0,1.0,ray.iterate);
+  const vec3 growCol = vec3(1.0);
   vec3 grow = growIntencity * coef * growCol;
   ray.fragColor += grow;
 }
 
-const float minRadius = 0.0;
-const float maxRadius = 20.0;
+const float minRadius = 10.0;
+const float maxRadius = 30.0;
 void fogFunc(inout rayobj ray){//霧
   rayobj ray2 = ray;
   ray2.material = SAIHATE;

@@ -6,10 +6,11 @@ uniform vec3  cDir;
 uniform vec3  cPos;
 
 const float PI = 3.14159265;
+const float PI2 = PI*2.0;
 const float E = 2.71828182;
 const float INFINITY = 1.e20;
 const float FOV = 30.0 * 0.5 * PI / 180.0;//field of view
-const vec3 LightDir = normalize(vec3(2.0,1.0,3.0));
+const vec3 LightDir = normalize(vec3(2.0,1.0,1.0));
 const int Iteration =128;
 const int MAX_REFRECT = 2;
 
@@ -39,9 +40,9 @@ struct effectConfig{
 };
 
 const effectConfig effect = effectConfig(
-  true, //反射
-  false,  //アンビエント
-  true, //ハイライト(鏡面反射)
+  false, //反射
+  true,  //アンビエント
+  false, //ハイライト(鏡面反射)
   true, //拡散光
   false,  //白熱光
   true,  //ソフトシャドウ
@@ -57,26 +58,42 @@ struct dfstruct{
 };
 `
 let fs_main1 =`
-dfstruct dfmax(dfstruct df1, dfstruct df2){ //共通部分
-  if (df1.dist < df2.dist){
-    return df2;
-  }else{
-    return df1;
-  }
+float floor1(vec3 z){
+  return plane(z,vec3(0,0,1),-1.95);
 }
 
-dfstruct dfmin(dfstruct df1, dfstruct df2){//和集合
-  if (df1.dist < df2.dist){
-    return df1;
-  }else{
-    return df2;
-  }
+const float space = 1.3;
+float gear1(vec3 z){
+  z = z- vec3(0,space,0);
+  z = turn(z,vec3(0,1,0),PI/2.0);
+  z = turn(z,vec3(0,0,1),PI/20.0+time);
+  return gear(z, 1.0, 1.4, 0.1, 20, 0.06);
+}
+float gear2(vec3 z){
+  z = z- vec3(0,-space,0);
+  z = turn(z,vec3(0,1,0),PI/2.0);
+  z = turn(z,vec3(0,0,1),-time);
+  return gear(z, 1.0, 1.4, 0.1, 20, 0.06);
 }
 
 dfstruct distanceFunction(vec3 z){
-  dfstruct pseudoKleinian = dfstruct(shiftKeinian(z),0);
-  dfstruct plane = dfstruct(plane1(z),0);
-  dfstruct df = dfmax(pseudoKleinian,plane);
+  z = z +vec3(-2,0,0);
+  dfstruct plane = dfstruct(floor1(z),1);
+  dfstruct gear1 = dfstruct(gear1(z),0);
+  dfstruct gear2 = dfstruct(gear2(z),0);
+
+  dfstruct df;
+  df = dfmin(plane,gear1);
+  df = dfmin(df,gear2);
+  return df;
+}
+dfstruct depthFunction(vec3 z){
+  z=z +vec3(-2,0,0);
+  dfstruct plane = dfstruct(floor1(z),1);
+  //dfstruct gear = dfstruct(gear(z),2);
+
+  dfstruct df;
+  //df = dfmin(plane,gear);
   return df;
 }
 `
@@ -94,6 +111,7 @@ void main(void){
   //レイの定義と移動
   rayobj ray = rayobj(cPos,direction,0.0,0.0,0.0,99,0,vec3(0.0),vec3(0.0));
   raymarch(ray);
+  //trick(ray,2.1);//錯視
   ray.material = materialOf(ray.objectID);
 
   //エフェクト
